@@ -1,0 +1,36 @@
+name:                blog
+version:             0.1.0.0
+github:              "luc-tielen/blog"
+license:             BSD3
+author:              "Luc Tielen"
+maintainer:          "luc.tielen@gmail.com"
+copyright:           "2020 Luc Tielen"
+
+extra-source-files:
+- README.md
+
+synopsis:            My blog, built with slick!
+category:            Slick-Site
+
+description: My personal blog
+
+executables:
+  build-site:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - base >= 4.7 && < 5
+    - shake
+    - slick
+    - text
+    - containers
+    - unordered-containers
+    - lens
+    - aeson
+    - lens-aeson
+    - time
