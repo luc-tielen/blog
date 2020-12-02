@@ -25,15 +25,15 @@ import qualified Data.Text                  as T
 
 siteMeta :: SiteMeta
 siteMeta =
-    SiteMeta { siteAuthor = "Me"
-             , baseUrl = "https://example.com"
-             , siteTitle = "My Slick Site"
-             , twitterHandle = Just "myslickhandle"
-             , githubUser = Just "myslickgithubuser"
+    SiteMeta { siteAuthor = "Luc Tielen"
+             , baseUrl = "https://luctielen.com"
+             , siteTitle = "My blog"
+             , twitterHandle = Just "luctielen"
+             , githubUser = Just "luc-tielen"
              }
 
 outputFolder :: FilePath
-outputFolder = "docs/"
+outputFolder = "build/"
 
 --Data models-------------------------------------------------------------------
 
