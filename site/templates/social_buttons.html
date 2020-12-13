@@ -1,0 +1,19 @@
+<div class="social-buttons">
+  <a href="https://twitter.com/share"
+     class="twitter-share-button"
+     data-url="{{baseUrl}}{{#stripExt}}{{url}}{{/stripExt}}"
+     data-text="Check out: {{title}} - "
+     data-via="{{twitterHandle}}">
+    Tweet
+  </a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+  {{#twitterHandle}}
+  <a href="https://twitter.com/{{twitterHandle}}"
+     class="twitter-follow-button"
+     data-show-count="false"
+     data-dnt="true">
+    Follow @{{twitterHandle}}
+  </a>
+  {{/twitterHandle}}
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+</div>
