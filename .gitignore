@@ -1,0 +1,8 @@
+.stack-work/
+.shake
+Setup.hs
+app/
+site/
+blog.cabal
+package.yaml
+stack.yaml*
