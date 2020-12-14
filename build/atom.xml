@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>Luc&#39;s personal blog</title>
+    <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
+  <updated>2020-12-14T11:06:SZ</updated>
+  <author>
+      <name>Luc Tielen</name>
+  </author>
+  <id>https://luctielen.com/</id>
+
+  <entry>
+      <title>Hello blog!</title>
+      <link href="https://luctielen.composts/hello_blog.html"/>
+      <id>https://luctielen.composts/hello_blog.html</id>
+      <updated>2020-12-13T00:00:SZ</updated>
+      <category term="meta"/>
+      <summary>My first blog post</summary>
+      <content type="html"><![CDATA[<p>Welcome to your first blog post!</p>]]></content>
+  </entry>
+</feed>

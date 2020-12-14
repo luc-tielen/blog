@@ -1,0 +1,178 @@
+:root {
+    --header-font: "Amaranth";
+    --text-font: "Titillium Web";
+    --code-font: "Fira Code";
+
+    --background-color: white;
+    --header-color: #1c2541;
+    --header-text-color: #1c2541;
+    --header-content-color: white;
+    --link-color: #0898fe;
+}
+
+@media screen and (min-width: 1001px) {
+    :root {
+        --content-width: 50rem;
+    }
+}
+
+@media screen and (min-width: 601px) and (max-width: 1000px) {
+    :root {
+        --content-width: 30rem;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    :root {
+        --content-width: 100%;
+    }
+}
+
+html, body, ul, ol {
+    padding: 0;
+    margin: 0;
+}
+
+html {
+    background: var(--background-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
+body {
+    font-family: var(--text-font), sans-serif;
+}
+
+h1, h2, h3, h4, h5 {
+    color: var(--header-text-color);
+    font-family: var(--header-font), sans-serif;
+    font-weight: bold;
+    margin-top: 2rem;
+    margin-bottom: 1.38rem;
+}
+
+h1 {
+    font-size: 3.052rem;
+}
+
+h2 {
+    font-size: 2.441rem;
+}
+
+h3 {
+    font-size: 1.953rem;
+}
+
+h4 {
+    font-size: 1.563rem;
+}
+
+h5 {
+    font-size: 1.25rem;
+}
+
+small {
+    font-size: 0.8rem;
+}
+
+a {
+    color: var(--link-color);
+}
+
+code {
+    font-family: var(--code-font), monospace;
+}
+
+header {
+    background: var(--header-color);
+    position: sticky;
+    top: 0;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+header nav {
+    display: flex;
+    min-width: var(--content-width);
+}
+
+header svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+header nav a {
+    color: var(--header-content-color);
+    text-decoration: none;
+    text-transform: uppercase;
+}
+header nav a + a {
+    padding-left: 0.5rem;
+}
+
+header nav a:hover {
+    color: var(--link-color);
+}
+
+.social {
+    margin-left: auto;
+    height: 100%;
+}
+
+.social svg {
+    fill: var(--header-content-color);
+}
+
+.social svg:hover {
+    fill: var(--link-color);
+}
+
+header, main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: .75rem;
+    padding-right: .75rem;
+}
+
+main > * {
+    min-width: var(--content-width);
+    max-width: var(--content-width);
+}
+
+ul.posts {
+    margin-top: 1rem;
+    list-style: none;
+}
+
+ul.posts li {
+    display: flex;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+ul.posts li span {
+    opacity: 0.4;
+    min-width: 10rem;
+}
+
+/* Posts */
+.post {
+    padding-bottom: 3em;
+}
+
+.post h1 + p {
+    font-size: 1.5rem;
+}
+
+.post p {
+    line-height: 1.5;
+    margin-bottom: 1em;
+}
+
