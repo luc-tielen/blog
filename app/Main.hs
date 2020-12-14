@@ -82,13 +82,20 @@ data AtomData
   , atomUrl      :: String
   } deriving (Generic, ToJSON, Eq, Ord, Show)
 
--- | given a list of posts this will build a table of contents
+-- | Given a list of posts this will build a table of contents
 buildIndex :: [Post] -> Action ()
 buildIndex posts' = do
   indexT <- compileTemplate' "site/templates/index.html"
   let indexInfo = IndexInfo {posts = posts'}
       indexHTML = T.unpack $ substitute indexT (withSiteMeta $ toJSON indexInfo)
   writeFile' (outputFolder </> "index.html") indexHTML
+
+-- | Build the about page
+buildAbout :: Action ()
+buildAbout = do
+  aboutT <- compileTemplate' "site/templates/about.html"
+  let aboutHTML = T.unpack $ substitute aboutT $ toJSON siteMeta
+  writeFile' (outputFolder </> "about.html") aboutHTML
 
 -- | Find and build all posts
 buildPosts :: Action [Post]
@@ -156,6 +163,7 @@ buildRules = do
   allPosts <- buildPosts
   buildIndex allPosts
   buildFeed allPosts
+  buildAbout
   copyStaticFiles
 
 main :: IO ()

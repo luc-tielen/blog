@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="{{siteTitle}}">
+    <meta name="author" content="{{siteAuthor}}">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <title>{{siteTitle}}</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script type="text/javascript" src="/js/main.js"></script>
+  </head>
+  <body>
+    {{>site/templates/header.html}}
+    <main>
+      <h1>Luc Tielen</h1>
+      <p>
+        I'm a software engineer from Belgium passionate about functional programming, compilers and logic.
+        {{#twitterHandle}}
+        You can reach out to me on <a href="https://twitter.com/{{twitterHandle}}">Twitter</a>.
+        {{/twitterHandle}}
+        {{#githubUser}}
+        My open source code can be found on <a href="https://github.com/{{githubUser}}">Github</a>.
+        {{/githubUser}}
+        </p>
+      <p>
+        When I'm not tinkering on compilers, I spend most of my free time exploring on my bike or going for a walk with my dog.
+      </p>
+    </main>
+</body>
+</html>
