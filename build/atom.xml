@@ -2,19 +2,50 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>Luc&#39;s personal blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2020-12-14T11:06:SZ</updated>
+  <updated>2020-12-16T22:50:SZ</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
   <id>https://luctielen.com/</id>
 
   <entry>
-      <title>Hello blog!</title>
-      <link href="https://luctielen.composts/hello_blog.html"/>
-      <id>https://luctielen.composts/hello_blog.html</id>
+      <title>Hello, blog!</title>
+      <link href="https://luctielen.com/posts/hello_blog.html"/>
+      <id>https://luctielen.com/posts/hello_blog.html</id>
       <updated>2020-12-13T00:00:SZ</updated>
       <category term="meta"/>
       <summary>My first blog post</summary>
-      <content type="html"><![CDATA[<p>Welcome to your first blog post!</p>]]></content>
+      <content type="html"><![CDATA[<p>I've been wanting to create a blog for some time, but never got quite around to it, until now! In this article I describe the steps I took to host this blog, hopefully making it easier for others building their own blog in the future.</p>
+<h2 id="tech-stack">Tech stack</h2>
+<p>I wanted my blog to be easy to setup, minimal and extensible. In the past I've tried (and failed) setting up a blog because I never managed to finish the initial setup due to a complicated setup. After some googling around, I came across the <a href="https://hackage.haskell.org/package/slick">Slick static site generator</a>. Slick is written in Haskell and uses Pandoc + the Shake build system to compile all files into a static site. Slick assumes some Haskell knowledge but with the documentation you can have a first version of your blog up and running in a few minutes if you use the <a href="https://github.com/ChrisPenner/slick-template">default project template</a>.</p>
+<p>After I got the blog up and running, it was time to give the website it's own look and feel. I started with a standalone HTML and CSS file and played around with the styling. Once I was happy with how the site looked, I replaced the templates and CSS that Slick provides by default with my own. The code for this blog can be found on <a href="https://github.com/luc-tielen/blog.git">Github</a>. The "site/" directory contains all templates / CSS / markdown used to generate this blog.</p>
+<p>Generating the blog is as simple as running the following command:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a>$ <span class="ex">stack</span> run</span></code></pre></div>
+<p>This will put the generated files in the output folder you configured in "app/Main.hs".</p>
+<h2 id="deploying-the-site">Deploying the site</h2>
+<p>Now that I had the blog up and running, I still needed to deploy it somewhere. For this, I chose Netlify since it is often used for hosting static sites. Unfortunately though, Netlify has no direct support for Slick! To solve this, I wrote a small bash script that builds the blog and commits all necessary files from the blog into a separate orphan branch named "deploy":</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="co"># Run this script locally to trigger a build and deploy.</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># It assumes the &quot;deploy&quot; branch already exists</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="co"># (create with &quot;git checkout --orphan deploy&quot;)</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="kw">set</span> <span class="ex">-e</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a></span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="ex">stack</span> run</span>
+<span id="cb2-10"><a href="#cb2-10"></a></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="fu">git</span> checkout deploy</span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="fu">git</span> add build/</span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="fu">git</span> commit -m <span class="st">&#39;Deploy new version&#39;</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a><span class="fu">git</span> push</span>
+<span id="cb2-15"><a href="#cb2-15"></a><span class="fu">git</span> checkout -</span>
+<span id="cb2-16"><a href="#cb2-16"></a></span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="bu">exit</span> 0</span></code></pre></div>
+<p>On the Netlify side, I configured it to trigger a deploy of the blog if a push was made to the "deploy" branch.</p>
+<p>Last step was buying the domain name and linking it to the netlify site.</p>
+<h2 id="whats-next">What's next?</h2>
+<p>Phew, that was the first blogpost! If you followed along, you should now have your own blog setup! All that's left is to write some blogposts. <span class="emoji" data-emoji="smile">😄</span></p>
+<p>So what can you expect on this blog in the future? Most content will be related to functional programming, compilers and logic, with maybe occassionally some other (non-)tech things. You can get updates on this blog if you follow me on <a href="https://twitter.com/luctielen">Twitter</a> or if you subscribe to my <a href="https://luctielen.com/atom.xml">RSS feed</a>.</p>
+<p>Stay tuned!</p>]]></content>
   </entry>
 </feed>
