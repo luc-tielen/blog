@@ -95,7 +95,7 @@ buildAbout :: Action ()
 buildAbout = do
   aboutT <- compileTemplate' "site/templates/about.html"
   let aboutHTML = T.unpack $ substitute aboutT $ toJSON siteMeta
-  writeFile' (outputFolder </> "about.html") aboutHTML
+  writeFile' (outputFolder </> "about" </> "index.html") aboutHTML
 
 -- | Find and build all posts
 buildPosts :: Action [Post]
@@ -111,12 +111,12 @@ buildPost srcPath = cacheAction ("build" :: T.Text, srcPath) $ do
   postContent <- readFile' srcPath
   -- load post content and metadata as JSON blob
   postData <- markdownToHTML . T.pack $ postContent
-  let postUrl = T.pack . dropDirectory1 $ srcPath -<.> "html"
+  let postUrl = T.pack . dropDirectory1 $ dropExtension srcPath
       withPostUrl = _Object . at "url" ?~ String postUrl
   -- Add additional metadata we've been able to compute
   let fullPostData = withSiteMeta . withPostUrl $ postData
   template <- compileTemplate' "site/templates/post.html"
-  writeFile' (outputFolder </> T.unpack postUrl) . T.unpack $ substitute template fullPostData
+  writeFile' (outputFolder </> T.unpack postUrl </> "index.html") . T.unpack $ substitute template fullPostData
   convert fullPostData
 
 -- | Copy all static files from the listed folders to their destination
