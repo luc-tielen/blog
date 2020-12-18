@@ -1,32 +1,72 @@
+/*
+Colors extracted from here:
+https://invent.kde.org/frameworks/syntax-highlighting/-/merge_requests/65/diffs
+*/
+
 pre {
-    background-color: #F5FCFF;
+    background-color: #fafafa;
 }
 
 code {
-    background-color: #F5FCFF;
-    color: #268BD2;
+    background-color: #fafafa;
+    color: #575f66;
 }
 
 /* KeyWordTok */
-.sourceCode .kw { color: #600095; }
+.sourceCode .kw { color: #fa8d3e; }
 /* DataTypeTok */
-.sourceCode .dt { color: #268BD2; }
+.sourceCode .dt { color: #fa8d3e; }
 
 /* DecValTok (decimal value), BaseNTok, FloatTok */
-.sourceCode .dv, .sourceCode .bn, .sourceCode .fl { color: #AE81FF; }
+.sourceCode .dv, .sourceCode .bn, .sourceCode .fl { color: #ff9940; }
 /* CharTok */
-.sourceCode .ch { color: #37ad2d; }
+.sourceCode .ch { color: #4cbf99; }
 /* StringTok */
-.sourceCode .st { color: #37ad2d; }
+.sourceCode .st { color: #86b300; }
+/* SpecialCharTok */
+.sourceCode .sc { color: #4cbf99; }
+/* SpecialStringTok */
+.sourceCode .ss { color: #4cbf99; }
+/* VerbatimStringTok */
+.sourceCode .vs { color: #86b300; }
 /* CommentTok */
-.sourceCode .co { color: #7E8E91; }
+.sourceCode .co { color: #607880; }
+/* CommentvarTok */
+.sourceCode .cv { color: #a37acc; }
 /* OtherTok */
-.sourceCode .ot { color: #EB005B; }
+.sourceCode .ot { color: #55b4d4; }
 /* AlertTok */
-.sourceCode .al { color: #A6E22E; font-weight: bold; }
+.sourceCode .al { color: #f51818; font-weight: bold; }
 /* FunctionTok */
-.sourceCode .fu { color: #333; }
+.sourceCode .fu { color: #f2ae49; }
 /* RegionMarkerTok */
-.sourceCode .re { }
+.sourceCode .re { color: #399ee6;}
 /* ErrorTok */
-.sourceCode .er { color: #E6DB74; font-weight: bold; }
+.sourceCode .er { color: #f51818; font-weight: bold; }
+/* WarningTok */
+.sourceCode .wa { color: #f07171; }
+/* AnnotationTok */
+.sourceCode .an { color: #e6ba7e; }
+/* AttributeTok */
+.sourceCode .at { color: #399ee6; }
+/* OperatorTok */
+.sourceCode .op { color: #ed9366; }
+/* ControlFlowTok */
+.sourceCode .cf { color: #fa8d3e }
+/* BuiltInTok */
+.sourceCode .bu { color: #4cbf99; }
+/* VariableTok */
+.sourceCode .va { color: #55b4d4; }
+/* ImportTok */
+.sourceCode .im { color: #86b300; }
+/* PreprocessorTok */
+.sourceCode .pp { color: #f07171; }
+/* ConstantTok */
+.sourceCode .cn { color: #a37acc; }
+/* DocumentationTok */
+.sourceCode .do { color: #5c6773; }
+/* ExtensionTok */
+.sourceCode .ex { color: #399ee6; }
+/* InformationTok */
+.sourceCode .in { color: #ff9940; }
+
