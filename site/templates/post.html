@@ -20,20 +20,16 @@
   <main class="post">
     <h1>{{title}}</h1>
     <!--
-    TODO:
-
     <span class="date">{{date}}</span>
-
+    -->
     <div class="tags">
       {{#tags}}
-      <span class="tag {{.}}">{{.}}</span>
+      <span class="tag tag-{{.}}"><a href="/tag/{{.}}">{{.}}</a></span>
       {{/tags}}
     </div>
-    -->
     {{#image}}
     <img class="post-image" src="/images/{{image}}"/>
     {{/image}}
     {{{content}}}
-    {{>site/templates/social_buttons.html}}
   </main>
 </body>

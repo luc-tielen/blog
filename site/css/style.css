@@ -7,6 +7,7 @@
     --header-color: #1c2541;
     --header-text-color: #1c2541;
     --header-content-color: white;
+    --tag-color: #8896ab;
     --link-color: #0898fe;
 }
 
@@ -177,3 +178,17 @@ ul.posts li span {
     margin-bottom: 1em;
 }
 
+/* Tags */
+.tag {
+    background: var(--tag-color);
+    font-style: italic;
+    white-space: nowrap;
+    border-radius: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.tag a {
+    color: white;
+    text-decoration: none;
+}
