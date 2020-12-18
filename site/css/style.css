@@ -87,6 +87,10 @@ a {
     color: var(--link-color);
 }
 
+pre {
+    overflow-x: scroll;
+}
+
 code {
     font-family: var(--code-font), monospace;
 }
