@@ -12,8 +12,8 @@ import           Control.Monad
 import           Data.Aeson                 as A
 import           Data.Aeson.Lens
 import           Data.Foldable (traverse_)
-import           Data.Function (on)
-import           Data.Map ( Map )
+import           Data.Map (Map)
+import           Data.Set (Set)
 import           Data.Time
 import           Development.Shake
 import           Development.Shake.Classes
@@ -23,8 +23,8 @@ import           GHC.Generics               (Generic)
 import           Slick
 
 import qualified Data.HashMap.Lazy as HML
-import qualified Data.List as List
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 import qualified Data.Text                  as T
 
 ---Config-----------------------------------------------------------------------
@@ -103,9 +103,9 @@ buildIndex posts' = do
   writeFile' (outputFolder </> "index.html") html
 
 -- | Build the tagged index pages
-buildTaggedIndex :: [Post] -> Action ()
-buildTaggedIndex =
-  traverse_ (uncurry buildTaggedIndex') . Map.toList . groupPostsByTag
+buildTaggedIndex :: Set Tag -> [Post] -> Action ()
+buildTaggedIndex tags =
+  traverse_ (uncurry buildTaggedIndex') . Map.toList . groupPostsByTag tags
   where
     buildTaggedIndex' tag' posts' = do
       indexT <- compileTemplate' "site/templates/posts-with-tag.html"
@@ -113,11 +113,10 @@ buildTaggedIndex =
           html = T.unpack $ substitute indexT (withSiteMeta $ toJSON info)
       writeFile' (outputFolder </> "tag" </> tag' </> "index.html") html
 
-groupPostsByTag :: [Post] -> Map Tag [Post]
-groupPostsByTag posts =
-  let posts' = concatMap (\p -> map (, p) $ tags p) posts
-      groupedPosts = List.groupBy ((==) `on` fst) posts'
-   in Map.fromList $ map sequenceA groupedPosts
+groupPostsByTag :: Set Tag -> [Post] -> Map Tag [Post]
+groupPostsByTag tags' posts' =
+  Map.fromList [(t, ps) | t <- Set.toList tags', let ps = filter (matchesTag t) posts']
+  where matchesTag t p = t `elem` tags p
 
 -- | Build the about page
 buildAbout :: Action ()
@@ -185,13 +184,17 @@ buildFeed posts = do
     mkAtomPost :: Post -> Post
     mkAtomPost p = p { date = formatDate $ date p }
 
+extractUniqueTags :: [Post] -> Set Tag
+extractUniqueTags posts' = Set.fromList [t | p <- posts', t <- tags p]
+
 -- | Specific build rules for the Shake system
 --   defines workflow to build the website
 buildRules :: Action ()
 buildRules = do
   allPosts <- buildPosts
+  let allTags = extractUniqueTags allPosts
   buildIndex allPosts
-  buildTaggedIndex allPosts
+  buildTaggedIndex allTags allPosts
   buildFeed allPosts
   buildAbout
   copyStaticFiles
