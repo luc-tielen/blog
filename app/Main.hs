@@ -1,8 +1,9 @@
-{-# LANGUAGE NamedFieldPuns        #-}
-{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DeriveAnyClass        #-}
-{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NamedFieldPuns        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TupleSections         #-}
 
 module Main where
 
@@ -10,6 +11,9 @@ import           Control.Lens
 import           Control.Monad
 import           Data.Aeson                 as A
 import           Data.Aeson.Lens
+import           Data.Foldable (traverse_)
+import           Data.Function (on)
+import           Data.Map ( Map )
 import           Data.Time
 import           Development.Shake
 import           Development.Shake.Classes
@@ -19,6 +23,8 @@ import           GHC.Generics               (Generic)
 import           Slick
 
 import qualified Data.HashMap.Lazy as HML
+import qualified Data.List as List
+import qualified Data.Map as Map
 import qualified Data.Text                  as T
 
 ---Config-----------------------------------------------------------------------
@@ -57,6 +63,12 @@ data IndexInfo
   { posts :: [Post]
   } deriving (Generic, Show, FromJSON, ToJSON)
 
+data IndexWithTagInfo
+  = IndexWithTagInfo
+  { tag :: Tag
+  , posts :: [Post]
+  } deriving (Generic, Show, FromJSON, ToJSON)
+
 type Tag = String
 
 -- | Data for a blog post
@@ -87,15 +99,32 @@ buildIndex :: [Post] -> Action ()
 buildIndex posts' = do
   indexT <- compileTemplate' "site/templates/index.html"
   let indexInfo = IndexInfo {posts = posts'}
-      indexHTML = T.unpack $ substitute indexT (withSiteMeta $ toJSON indexInfo)
-  writeFile' (outputFolder </> "index.html") indexHTML
+      html = T.unpack $ substitute indexT (withSiteMeta $ toJSON indexInfo)
+  writeFile' (outputFolder </> "index.html") html
+
+-- | Build the tagged index pages
+buildTaggedIndex :: [Post] -> Action ()
+buildTaggedIndex =
+  traverse_ (uncurry buildTaggedIndex') . Map.toList . groupPostsByTag
+  where
+    buildTaggedIndex' tag' posts' = do
+      indexT <- compileTemplate' "site/templates/posts-with-tag.html"
+      let info = IndexWithTagInfo {tag = tag', posts = posts'}
+          html = T.unpack $ substitute indexT (withSiteMeta $ toJSON info)
+      writeFile' (outputFolder </> "tag" </> tag' </> "index.html") html
+
+groupPostsByTag :: [Post] -> Map Tag [Post]
+groupPostsByTag posts =
+  let posts' = concatMap (\p -> map (, p) $ tags p) posts
+      groupedPosts = List.groupBy ((==) `on` fst) posts'
+   in Map.fromList $ map sequenceA groupedPosts
 
 -- | Build the about page
 buildAbout :: Action ()
 buildAbout = do
   aboutT <- compileTemplate' "site/templates/about.html"
-  let aboutHTML = T.unpack $ substitute aboutT $ toJSON siteMeta
-  writeFile' (outputFolder </> "about" </> "index.html") aboutHTML
+  let html = T.unpack $ substitute aboutT $ toJSON siteMeta
+  writeFile' (outputFolder </> "about" </> "index.html") html
 
 -- | Find and build all posts
 buildPosts :: Action [Post]
@@ -111,8 +140,8 @@ buildPost srcPath = cacheAction ("build" :: T.Text, srcPath) $ do
   postContent <- readFile' srcPath
   -- load post content and metadata as JSON blob
   postData <- markdownToHTML . T.pack $ postContent
-  let postUrl = T.pack . dropDirectory1 $ dropExtension srcPath
-      withPostUrl = _Object . at "url" ?~ String postUrl
+  let postUrl = T.pack $ dropDirectory1 $ dropExtension srcPath
+      withPostUrl = _Object . at "url" ?~ String ("/" <> postUrl)
   -- Add additional metadata we've been able to compute
   let fullPostData = withSiteMeta . withPostUrl $ postData
   template <- compileTemplate' "site/templates/post.html"
@@ -162,6 +191,7 @@ buildRules :: Action ()
 buildRules = do
   allPosts <- buildPosts
   buildIndex allPosts
+  buildTaggedIndex allPosts
   buildFeed allPosts
   buildAbout
   copyStaticFiles

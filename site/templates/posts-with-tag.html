@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="{{siteTitle}}">
+    <meta name="author" content="{{siteAuthor}}">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <title>{{siteTitle}}</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script type="text/javascript" src="/js/main.js"></script>
+  </head>
+  <body>
+    {{>site/templates/header.html}}
+    <main>
+      {{#tag}}
+      <h1 class="posts-title">All posts with tag "{{tag}}"</h1>
+      {{/tag}}
+      {{>site/templates/post-list.html}}
+    </main>
+</body>
+</html>
