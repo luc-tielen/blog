@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>Luc&#39;s personal blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2020-12-21T13:44:SZ</updated>
+  <updated>2020-12-21T15:53:SZ</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -12,7 +12,7 @@
       <title>How to set up your blog with Haskell, Slick and Netlify</title>
       <link href="https://luctielen.com//posts/how_to_setup_blog_with_haskell_slick_and_netlify"/>
       <id>https://luctielen.com//posts/how_to_setup_blog_with_haskell_slick_and_netlify</id>
-      <updated>2020-12-13T00:00:SZ</updated>
+      <updated>2020-12-21T00:00:SZ</updated>
       <category term="blog"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>I wanted to setup a blog powered by Haskell and HTML/CSS and host it on Netlify. Creating a static site is easy enough using <em>Slick</em>, but this has no direct support for Netlify. In this first post I will show you how to fix that.</p>
