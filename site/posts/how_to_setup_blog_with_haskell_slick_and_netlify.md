@@ -1,17 +1,15 @@
 ---
-title: Hello, blog!
+title: How to set up your blog with Haskell, Slick and Netlify
 author: Luc Tielen
 date: Dec 13, 2020
 tags:
-  - meta
-description: My first blog post
+  - blog
 image: hello_blog.png
 ---
 
-I've been wanting to create a blog for some time, but never got quite around to
-it, until now! In this article I describe the steps I took to host this
-blog, hopefully making it easier for others building their own blog in
-the future.
+I wanted to setup a blog powered by Haskell and HTML/CSS and host it on
+Netlify. Creating a static site is easy enough using _Slick_, but this has no
+direct support for Netlify. In this first post I will show you how to fix that.
 
 ## Tech stack
 
@@ -82,7 +80,10 @@ exit 0
 On the Netlify side, I configured it to trigger a deploy of the blog if a
 push was made to the "deploy" branch.
 
-Last step was buying the domain name and linking it to the netlify site.
+Last step was buying the domain name and linking it to my netlify app.
+I would suggest to buy the domain name via Netlify as well, for the
+easiest setup. For more information, see the
+[official Netlify docs](https://docs.netlify.com/domains-https/custom-domains/#assign-a-domain-to-a-site).
 
 ## What's next?
 
