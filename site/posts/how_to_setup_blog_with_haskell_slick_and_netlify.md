@@ -1,7 +1,7 @@
 ---
 title: How to set up your blog with Haskell, Slick and Netlify
 author: Luc Tielen
-date: Dec 13, 2020
+date: Dec 21, 2020
 tags:
   - blog
 image: hello_blog.png
