@@ -155,6 +155,10 @@ main > * {
     max-width: var(--content-width);
 }
 
+ol li, ul li {
+    margin-left: 1rem;
+}
+
 ul.posts {
     margin-top: 1rem;
     list-style: none;
