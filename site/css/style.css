@@ -159,6 +159,11 @@ ol li, ul li {
     margin-left: 1rem;
 }
 
+p {
+    margin-block-start: 0;
+    margin-block-end: 0;
+}
+
 ul.posts {
     margin-top: 1rem;
     list-style: none;
