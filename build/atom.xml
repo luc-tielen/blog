@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>Luc&#39;s personal blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2021-01-12T16:03:SZ</updated>
+  <updated>2021-01-12T17:19:SZ</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -10,8 +10,8 @@
 
   <entry>
       <title>Calling C++ from Haskell</title>
-      <link href="https://luctielen.com//posts/calling_cpp_from_haskell"/>
-      <id>https://luctielen.com//posts/calling_cpp_from_haskell</id>
+      <link href="https://luctielen.com/posts/calling_cpp_from_haskell"/>
+      <id>https://luctielen.com/posts/calling_cpp_from_haskell</id>
       <updated>2021-01-12T00:00:SZ</updated>
       <category term="haskell"/>
       <category term="c++"/>
@@ -316,8 +316,8 @@
   </entry>
   <entry>
       <title>How to set up your blog with Haskell, Slick and Netlify</title>
-      <link href="https://luctielen.com//posts/how_to_setup_blog_with_haskell_slick_and_netlify"/>
-      <id>https://luctielen.com//posts/how_to_setup_blog_with_haskell_slick_and_netlify</id>
+      <link href="https://luctielen.com/posts/how_to_setup_blog_with_haskell_slick_and_netlify"/>
+      <id>https://luctielen.com/posts/how_to_setup_blog_with_haskell_slick_and_netlify</id>
       <updated>2020-12-21T00:00:SZ</updated>
       <category term="blog"/>
       <summary></summary>
