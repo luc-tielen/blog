@@ -1,22 +1,54 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <title>Luc&#39;s personal blog</title>
-    <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2021-01-12T16:03:SZ</updated>
-  <author>
-      <name>Luc Tielen</name>
-  </author>
-  <id>https://luctielen.com/</id>
-
-  <entry>
-      <title>Calling C++ from Haskell</title>
-      <link href="https://luctielen.com//posts/calling_cpp_from_haskell"/>
-      <id>https://luctielen.com//posts/calling_cpp_from_haskell</id>
-      <updated>2021-01-12T00:00:SZ</updated>
-      <category term="haskell"/>
-      <category term="c++"/>
-      <summary></summary>
-      <content type="html"><![CDATA[<p>In today's blogpost, I will show an approach for calling C++ code from Haskell. This can be useful in case you need the extra performance from C++ or if there is no library in the Haskell ecosystem that provides the functionality you need (but there is a C++ library for it).</p>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Luc&#39;s personal blog">
+    <meta name="author" content="Luc Tielen">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="Calling C++ from Haskell">
+    <meta name="twitter:description" content="">
+    <meta name="twitter:image" content="https://luctielen.com/images/calling-cpp-from-haskell.jpg">
+    <title>Calling C++ from Haskell</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <script type="text/javascript" src="/js/main.js"></script>
+  </head>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://twitter.com/luctielen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M16 3.538a6.461 6.461 0 01-1.884.516 3.301 3.301 0 001.444-1.816 6.607 6.607 0 01-2.084.797 3.28 3.28 0 00-2.397-1.034 3.28 3.28 0 00-3.197 4.028 9.321 9.321 0 01-6.766-3.431 3.284 3.284 0 001.015 4.381A3.301 3.301 0 01.643 6.57v.041A3.283 3.283 0 003.277 9.83a3.291 3.291 0 01-1.485.057 3.293 3.293 0 003.066 2.281 6.586 6.586 0 01-4.862 1.359 9.286 9.286 0 005.034 1.475c6.037 0 9.341-5.003 9.341-9.341 0-.144-.003-.284-.009-.425a6.59 6.59 0 001.637-1.697z"/></svg>
+      </a>
+      <a href="https://github.com/luc-tielen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M8 .198a8 8 0 00-2.529 15.591c.4.074.547-.174.547-.385 0-.191-.008-.821-.011-1.489-2.226.484-2.695-.944-2.695-.944-.364-.925-.888-1.171-.888-1.171-.726-.497.055-.486.055-.486.803.056 1.226.824 1.226.824.714 1.223 1.872.869 2.328.665.072-.517.279-.87.508-1.07-1.777-.202-3.645-.888-3.645-3.954 0-.873.313-1.587.824-2.147-.083-.202-.357-1.015.077-2.117 0 0 .672-.215 2.201.82A7.672 7.672 0 018 4.066c.68.003 1.365.092 2.004.269 1.527-1.035 2.198-.82 2.198-.82.435 1.102.162 1.916.079 2.117.513.56.823 1.274.823 2.147 0 3.073-1.872 3.749-3.653 3.947.287.248.543.735.543 1.481 0 1.07-.009 1.932-.009 2.195 0 .213.144.462.55.384A8 8 0 008.001.196z"/></svg>
+      </a>
+      <a href="/atom.xml">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"/></svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="post">
+    <h1>Calling C++ from Haskell</h1>
+    <!--
+    <span class="date">Jan 12, 2021</span>
+    -->
+    <div class="tags">
+      <span class="tag tag-haskell"><a href="/tag/haskell">haskell</a></span>
+      <span class="tag tag-c++"><a href="/tag/c++">c++</a></span>
+    </div>
+    <img class="post-image" src="/images/calling-cpp-from-haskell.jpg"/>
+    <p>In today's blogpost, I will show an approach for calling C++ code from Haskell. This can be useful in case you need the extra performance from C++ or if there is no library in the Haskell ecosystem that provides the functionality you need (but there is a C++ library for it).</p>
 <p>The code snippets in this article are kept "simple" (though I will assume some C++ knowledge, since you will need to write some extra C++ code when binding to Haskell). The examples are derived from my <a href="https://github.com/luc-tielen/souffle-haskell.git">souffle-haskell library</a>, where I had to write Haskell bindings to interact with the Soufflé datalog language.</p>
 <h2 id="binding-to-c">Binding to C++</h2>
 <p>If a library is meant to be used from many other languages, most of the time it will provide a C API for doing so. C has a relatively small feature-set and a well-defined, stable ABI (binary interface). On top of that, most languages have good support for interacting with C via a foreign function interface (FFI), making it straight-forward to interface with C.</p>
@@ -312,55 +344,8 @@
 <h2 id="conclusion">Conclusion</h2>
 <p>This post turned out <em>much</em> larger than I initially expected! I guess this shows that binding to C++ is more work than C, but can definitely be done. The code in some snippets is simplified to avoid making this blog post even longer. If you are interested in what a "real" example of this approach looks like, check out my <a href="https://github.com/luc-tielen/souffle-haskell">souffle-haskell library</a>. You can find the most relevant files for binding to C++ <a href="https://github.com/luc-tielen/souffle-haskell/blob/master/cbits/souffle.cpp">here</a>, <a href="https://github.com/luc-tielen/souffle-haskell/blob/master/lib/Language/Souffle/Internal/Bindings.hs">here</a> and <a href="https://github.com/luc-tielen/souffle-haskell/blob/master/lib/Language/Souffle/Internal.hs">here</a>.</p>
 <p>One final thing to mention is that this approach isn't specific to Haskell, you would only need to swap out the Haskell code with your language of choice to bind to the underlying C++ code.</p>
-<p>If you are interested in more content like this, follow me on <a href="https://twitter.com/luctielen">Twitter</a> for blogpost updates or subscribe to the <a href="https://luctielen.com/atom.xml">RSS feed</a>.</p>]]></content>
-  </entry>
-  <entry>
-      <title>How to set up your blog with Haskell, Slick and Netlify</title>
-      <link href="https://luctielen.com//posts/how_to_setup_blog_with_haskell_slick_and_netlify"/>
-      <id>https://luctielen.com//posts/how_to_setup_blog_with_haskell_slick_and_netlify</id>
-      <updated>2020-12-21T00:00:SZ</updated>
-      <category term="blog"/>
-      <summary></summary>
-      <content type="html"><![CDATA[<p>I wanted to setup a blog powered by Haskell and HTML/CSS and host it on Netlify. Creating a static site is easy enough using <em>Slick</em>, but this has no direct support for Netlify. In this first post I will show you how to fix that.</p>
-<h2 id="tech-stack">Tech stack</h2>
-<p>I wanted my blog to be easy to setup, minimal and extensible. In the past I've tried (and failed) setting up a blog because I never managed to finish the initial setup due to a complicated setup. After some googling around, I came across the <a href="https://hackage.haskell.org/package/slick">Slick static site generator</a>. Slick is written in Haskell and uses Pandoc + the Shake build system to compile all files into a static site. Slick assumes some Haskell knowledge but with the documentation you can have a first version of your blog up and running in a few minutes if you use the <a href="https://github.com/ChrisPenner/slick-template">default project template</a>.</p>
-<p>After I got the blog up and running, it was time to give the website it's own look and feel. I started with a standalone HTML and CSS file and played around with the styling. Once I was happy with how the site looked, I replaced the templates and CSS that Slick provides by default with my own. The code for this blog can be found on <a href="https://github.com/luc-tielen/blog.git">Github</a>. The "site/" directory contains all templates / CSS / markdown used to generate this blog.</p>
-<p>Generating the blog is as simple as running the following command:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a>$ <span class="ex">stack</span> run</span></code></pre></div>
-<p>This will put the generated files in the output folder you configured in "app/Main.hs".</p>
-<h2 id="deploying-the-site">Deploying the site</h2>
-<p>Now that I had the blog up and running, I still needed to deploy it somewhere. For this, I chose Netlify since it is often used for hosting static sites. Unfortunately though, Netlify has no direct support for Slick! To solve this, I wrote a small bash script that builds the blog and commits all necessary files from the blog into a separate orphan branch named "deploy":</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">#!/bin/bash</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a></span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="co"># Run this script locally to trigger a build and deploy.</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a><span class="co"># It assumes the &quot;deploy&quot; branch already exists</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a><span class="co"># (create with &quot;git checkout --orphan deploy&quot;)</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a></span>
-<span id="cb2-7"><a href="#cb2-7"></a><span class="kw">set</span> <span class="ex">-e</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a></span>
-<span id="cb2-9"><a href="#cb2-9"></a><span class="bu">echo</span> <span class="st">&quot;Generating blog...&quot;</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a><span class="ex">stack</span> run</span>
-<span id="cb2-11"><a href="#cb2-11"></a><span class="fu">tar</span> czf build.tar.gz build/</span>
-<span id="cb2-12"><a href="#cb2-12"></a></span>
-<span id="cb2-13"><a href="#cb2-13"></a><span class="bu">echo</span> <span class="st">&quot;Updating blog content...&quot;</span></span>
-<span id="cb2-14"><a href="#cb2-14"></a><span class="fu">git</span> checkout deploy</span>
-<span id="cb2-15"><a href="#cb2-15"></a><span class="fu">rm</span> -rf build/</span>
-<span id="cb2-16"><a href="#cb2-16"></a><span class="fu">tar</span> xzf build.tar.gz</span>
-<span id="cb2-17"><a href="#cb2-17"></a><span class="fu">rm</span> build.tar.gz</span>
-<span id="cb2-18"><a href="#cb2-18"></a></span>
-<span id="cb2-19"><a href="#cb2-19"></a><span class="bu">echo</span> <span class="st">&quot;Deploying blog...&quot;</span></span>
-<span id="cb2-20"><a href="#cb2-20"></a><span class="fu">git</span> add build/</span>
-<span id="cb2-21"><a href="#cb2-21"></a><span class="fu">git</span> commit -m <span class="st">&#39;Deploy new version&#39;</span></span>
-<span id="cb2-22"><a href="#cb2-22"></a><span class="fu">git</span> push</span>
-<span id="cb2-23"><a href="#cb2-23"></a></span>
-<span id="cb2-24"><a href="#cb2-24"></a><span class="fu">git</span> checkout -</span>
-<span id="cb2-25"><a href="#cb2-25"></a></span>
-<span id="cb2-26"><a href="#cb2-26"></a><span class="bu">exit</span> 0</span></code></pre></div>
-<p>On the Netlify side, I configured it to trigger a deploy of the blog if a push was made to the "deploy" branch.</p>
-<p>Last step was buying the domain name and linking it to my netlify app. I would suggest to buy the domain name via Netlify as well, for the easiest setup. For more information, see the <a href="https://docs.netlify.com/domains-https/custom-domains/#assign-a-domain-to-a-site">official Netlify docs</a>.</p>
-<h2 id="whats-next">What's next?</h2>
-<p>Phew, that was the first blogpost! If you followed along, you should now have your own blog setup! All that's left is to write some blogposts. <span class="emoji" data-emoji="smile">😄</span></p>
-<p>So what can you expect on this blog in the future? Most content will be related to functional programming, compilers and logic, with maybe occassionally some other (non-)tech things. You can get updates on this blog if you follow me on <a href="https://twitter.com/luctielen">Twitter</a> or if you subscribe to my <a href="https://luctielen.com/atom.xml">RSS feed</a>.</p>
-<p>Stay tuned!</p>]]></content>
-  </entry>
-</feed>
+<p>If you are interested in more content like this, follow me on <a href="https://twitter.com/luctielen">Twitter</a> for blogpost updates or subscribe to the <a href="https://luctielen.com/atom.xml">RSS feed</a>.</p>
+    <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
+         style="display:none;" width="1" height="1"/>
+  </main>
+</body>
