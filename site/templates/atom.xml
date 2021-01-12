@@ -11,8 +11,8 @@
   {{#posts}}
   <entry>
       <title>{{title}}</title>
-      <link href="{{domain}}/{{url}}"/>
-      <id>{{domain}}/{{url}}</id>
+      <link href="{{domain}}{{url}}"/>
+      <id>{{domain}}{{url}}</id>
       <updated>{{date}}</updated>
       {{#tags}}
       <category term="{{.}}"/>
