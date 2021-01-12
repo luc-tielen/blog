@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>Luc&#39;s personal blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2021-01-12T17:24:SZ</updated>
+  <updated>2021-01-12T17:26:SZ</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -37,8 +37,8 @@
 <ul>
 <li><em>foreign import ccall</em>: We're importing a foreign function!</li>
 <li><em>unsafe</em>: This tells the Haskell compiler that the foreign function will not call back into Haskell. This results in less overhead when crossing language boundaries but you should only use the keyword when this is really the case!</li>
-<li><em>"example"</em>: The name of the function (as defined in C++)</li>
-<li><em>example</em>: The name of the function (in Haskell)</li>
+<li><em>"answer_to_everything"</em>: The name of the function (as defined in C++)</li>
+<li>_answerToEverything: The name of the function (in Haskell)</li>
 <li>Type signature: You need to manually add a type signature here, using the types defined in <a href="https://hackage.haskell.org/package/base-4.14.1.0/docs/Foreign-C-Types.html">Foreign.C.Types</a>. Depending on if the function is pure or not, you also should wrap the result in IO. The Haskell compiler blindly trusts you as a programmer to provide the correct signature. If you make a mistake here, <em>bad things will happen</em><span class="emoji" data-emoji="tm">™️</span>, so be sure to get it right.</li>
 </ul>
 <h3 id="memory-management-and-objects">Memory management and objects</h3>
