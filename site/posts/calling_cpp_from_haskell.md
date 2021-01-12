@@ -5,7 +5,7 @@ date: Jan 12, 2021
 tags:
   - haskell
   - c++
-image: calling_c++_from_haskell.jpg
+image: calling-cpp-from-haskell.jpg
 ---
 
 In today's blogpost, I will show an approach for calling C++ code from Haskell.
