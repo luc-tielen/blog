@@ -185,6 +185,10 @@ ul.posts li span {
     padding-bottom: 3em;
 }
 
+.post-image {
+    margin-bottom: 2rem;
+}
+
 .post h1 + p {
     font-size: 1.5rem;
 }
