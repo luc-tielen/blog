@@ -71,7 +71,7 @@ per-function basis. The syntax is as follows:
   call back into Haskell. This results in less overhead when crossing language
   boundaries but you should only use the keyword when this is really the case!
 - _"answer_to_everything"_: The name of the function (as defined in C++)
-- _answerToEverything: The name of the function (in Haskell)
+- _answerToEverything_: The name of the function (in Haskell)
 - Type signature: You need to manually add a type signature here, using the
   types defined in
   [Foreign.C.Types](https://hackage.haskell.org/package/base-4.14.1.0/docs/Foreign-C-Types.html).
