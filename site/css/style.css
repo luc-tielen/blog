@@ -195,6 +195,10 @@ ul.posts li span {
 }
 
 /* Tags */
+.tags {
+    margin-bottom: 1rem;
+}
+
 .tag {
     background: var(--tag-color);
     font-style: italic;
