@@ -193,7 +193,9 @@ foreign import ccall unsafe "example_do_stuff" exampleDoStuff
 -- This initializes a Example object on the heap, that will be
 -- cleaned up with "exampleDestroy" when it is no longer in use.
 mkExample :: IO (ForeignPtr Example)
-mkExample = do
+mkExample = mask_ $ do
+  -- mask_ is needed to avoid leaking the pointer in case an async exception
+  -- occurs between allocation and wrapping it in a foreign pointer.
   ptr <- exampleCreate
   newForeignPtr exampleDestroy ptr
 
@@ -408,7 +410,7 @@ foreign import ccall unsafe "ffi_iterator_next" ffiIteratorNext
 
 mkExampleIterator :: Ptr Example -> IO (ForeignPtr ExampleIterator)
 mkExampleIterator ptr =
-  newForeignPtr ffiIteratorDestroy =<< ffiIteratorCreate ptr
+  mask_ $ newForeignPtr ffiIteratorDestroy =<< ffiIteratorCreate ptr
 
 -- Helper function for looping over the data and collecting the results on
 -- the Haskell side.
