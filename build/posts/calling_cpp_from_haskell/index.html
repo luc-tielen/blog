@@ -137,17 +137,19 @@
 <span id="cb4-13"><a href="#cb4-13"></a><span class="co">-- This initializes a Example object on the heap, that will be</span></span>
 <span id="cb4-14"><a href="#cb4-14"></a><span class="co">-- cleaned up with &quot;exampleDestroy&quot; when it is no longer in use.</span></span>
 <span id="cb4-15"><a href="#cb4-15"></a><span class="ot">mkExample ::</span> <span class="dt">IO</span> (<span class="dt">ForeignPtr</span> <span class="dt">Example</span>)</span>
-<span id="cb4-16"><a href="#cb4-16"></a>mkExample <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb4-17"><a href="#cb4-17"></a>  ptr <span class="ot">&lt;-</span> exampleCreate</span>
-<span id="cb4-18"><a href="#cb4-18"></a>  newForeignPtr exampleDestroy ptr</span>
-<span id="cb4-19"><a href="#cb4-19"></a></span>
-<span id="cb4-20"><a href="#cb4-20"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
-<span id="cb4-21"><a href="#cb4-21"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb4-22"><a href="#cb4-22"></a>  obj <span class="ot">&lt;-</span> mkExample</span>
-<span id="cb4-23"><a href="#cb4-23"></a>  <span class="co">-- Now we can use the pointer by unwrapping it with &quot;withForeignPtr&quot;:</span></span>
-<span id="cb4-24"><a href="#cb4-24"></a>  withForeignPtr obj <span class="op">$</span> \ptr <span class="ot">-&gt;</span> <span class="kw">do</span></span>
-<span id="cb4-25"><a href="#cb4-25"></a>    result <span class="ot">&lt;-</span> exampleDoStuff ptr <span class="dv">1234</span></span>
-<span id="cb4-26"><a href="#cb4-26"></a>    <span class="fu">print</span> result  <span class="co">-- Process the result.</span></span></code></pre></div>
+<span id="cb4-16"><a href="#cb4-16"></a>mkExample <span class="ot">=</span> mask_ <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a>  <span class="co">-- mask_ is needed to avoid leaking the pointer in case an async exception</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a>  <span class="co">-- occurs between allocation and wrapping it in a foreign pointer.</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a>  ptr <span class="ot">&lt;-</span> exampleCreate</span>
+<span id="cb4-20"><a href="#cb4-20"></a>  newForeignPtr exampleDestroy ptr</span>
+<span id="cb4-21"><a href="#cb4-21"></a></span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb4-23"><a href="#cb4-23"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb4-24"><a href="#cb4-24"></a>  obj <span class="ot">&lt;-</span> mkExample</span>
+<span id="cb4-25"><a href="#cb4-25"></a>  <span class="co">-- Now we can use the pointer by unwrapping it with &quot;withForeignPtr&quot;:</span></span>
+<span id="cb4-26"><a href="#cb4-26"></a>  withForeignPtr obj <span class="op">$</span> \ptr <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb4-27"><a href="#cb4-27"></a>    result <span class="ot">&lt;-</span> exampleDoStuff ptr <span class="dv">1234</span></span>
+<span id="cb4-28"><a href="#cb4-28"></a>    <span class="fu">print</span> result  <span class="co">-- Process the result.</span></span></code></pre></div>
 <h3 id="overloads">Overloads</h3>
 <p>C++ has support for <em>overloadable functions</em> (functions with the same name and scope, but with different type signatures and function bodies). However, this is again not supported in C and as such is not possible to do in the FFI. If we want to be able to call these overloads, we have to wrap each variant with a helper function that is exposed in the FFI. If we add an overload to our Example class defined earlier, we can expose overloaded functions as follows:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">class</span> Example {</span>
@@ -302,7 +304,7 @@
 <span id="cb12-12"><a href="#cb12-12"></a></span>
 <span id="cb12-13"><a href="#cb12-13"></a><span class="ot">mkExampleIterator ::</span> <span class="dt">Ptr</span> <span class="dt">Example</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">ForeignPtr</span> <span class="dt">ExampleIterator</span>)</span>
 <span id="cb12-14"><a href="#cb12-14"></a>mkExampleIterator ptr <span class="ot">=</span></span>
-<span id="cb12-15"><a href="#cb12-15"></a>  newForeignPtr ffiIteratorDestroy <span class="op">=&lt;&lt;</span> ffiIteratorCreate ptr</span>
+<span id="cb12-15"><a href="#cb12-15"></a>  mask_ <span class="op">$</span> newForeignPtr ffiIteratorDestroy <span class="op">=&lt;&lt;</span> ffiIteratorCreate ptr</span>
 <span id="cb12-16"><a href="#cb12-16"></a></span>
 <span id="cb12-17"><a href="#cb12-17"></a><span class="co">-- Helper function for looping over the data and collecting the results on</span></span>
 <span id="cb12-18"><a href="#cb12-18"></a><span class="co">-- the Haskell side.</span></span>
