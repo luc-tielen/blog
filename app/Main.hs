@@ -12,7 +12,9 @@ import           Control.Monad
 import           Data.Aeson                 as A
 import           Data.Aeson.Lens
 import           Data.Foldable (traverse_)
+import           Data.List (sortOn)
 import           Data.Map (Map)
+import           Data.Ord (Down(..))
 import           Data.Set (Set)
 import           Data.Time
 import           Development.Shake
@@ -153,11 +155,15 @@ copyStaticFiles = do
   void $ forP filepaths $ \filepath ->
     copyFileChanged ("site" </> filepath) (outputFolder </> filepath)
 
+sortByDate :: [Post] -> [Post]
+sortByDate = sortOn descendingPostDate where
+  descendingPostDate = Down . parseDate . date
+
 formatDate :: String -> String
-formatDate humanDate = toIsoDate parsedTime
-  where
-    parsedTime =
-      parseTimeOrError True defaultTimeLocale "%b %e, %Y" humanDate :: UTCTime
+formatDate = toIsoDate . parseDate
+
+parseDate :: String -> UTCTime
+parseDate = parseTimeOrError True defaultTimeLocale "%b %e, %Y"
 
 rfc3339 :: Maybe String
 rfc3339 = Just "%H:%M:SZ"
@@ -190,7 +196,7 @@ extractUniqueTags posts' = Set.fromList [t | p <- posts', t <- tags p]
 --   defines workflow to build the website
 buildRules :: Action ()
 buildRules = do
-  allPosts <- buildPosts
+  allPosts <- sortByDate <$> buildPosts
   let allTags = extractUniqueTags allPosts
   buildIndex allPosts
   buildTaggedIndex allTags allPosts
