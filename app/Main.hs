@@ -37,6 +37,7 @@ siteMeta =
              , baseUrl = "https://luctielen.com"
              , siteTitle = "Luc's personal blog"
              , twitterHandle = Just "luctielen"
+             , twitchHandle = Just "luctielen"
              , githubUser = Just "luc-tielen"
              }
 
@@ -56,6 +57,7 @@ data SiteMeta
   , baseUrl       :: String -- e.g. https://example.ca
   , siteTitle     :: String
   , twitterHandle :: Maybe String -- Without @
+  , twitchHandle  :: Maybe String
   , githubUser    :: Maybe String
   } deriving (Generic, Eq, Ord, Show, ToJSON)
 
