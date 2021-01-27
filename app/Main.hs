@@ -35,7 +35,7 @@ siteMeta :: SiteMeta
 siteMeta =
     SiteMeta { siteAuthor = "Luc Tielen"
              , baseUrl = "https://luctielen.com"
-             , siteTitle = "Luc's personal blog"
+             , siteTitle = "FP -> Compilers -> Logic -> Blog"
              , twitterHandle = Just "luctielen"
              , twitchHandle = Just "luctielen"
              , youtubeHandle = Just "UCeMz1NwTQlkhQvIFYMZoAJQ"
