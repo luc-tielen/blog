@@ -38,6 +38,7 @@ siteMeta =
              , siteTitle = "Luc's personal blog"
              , twitterHandle = Just "luctielen"
              , twitchHandle = Just "luctielen"
+             , youtubeHandle = Just "UCeMz1NwTQlkhQvIFYMZoAJQ"
              , githubUser = Just "luc-tielen"
              }
 
@@ -57,8 +58,9 @@ data SiteMeta
   , baseUrl       :: String -- e.g. https://example.ca
   , siteTitle     :: String
   , twitterHandle :: Maybe String -- Without @
-  , twitchHandle  :: Maybe String
   , githubUser    :: Maybe String
+  , twitchHandle  :: Maybe String
+  , youtubeHandle  :: Maybe String
   } deriving (Generic, Eq, Ord, Show, ToJSON)
 
 -- | Data for the index page
