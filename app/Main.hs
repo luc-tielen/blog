@@ -36,6 +36,7 @@ siteMeta =
     SiteMeta { siteAuthor = "Luc Tielen"
              , baseUrl = "https://luctielen.com"
              , siteTitle = "FP -> Compilers -> Logic -> Blog"
+             , kofiHandle = Just "luctielen"
              , twitterHandle = Just "luctielen"
              , twitchHandle = Just "luctielen"
              , youtubeHandle = Just "UCeMz1NwTQlkhQvIFYMZoAJQ"
@@ -54,9 +55,11 @@ withSiteMeta (Object obj) = Object $ HML.union obj siteMetaObj
 withSiteMeta _ = error "only add site meta to objects"
 
 data SiteMeta
-  = SiteMeta { siteAuthor    :: String
+  = SiteMeta
+  { siteAuthor    :: String
   , baseUrl       :: String -- e.g. https://example.ca
   , siteTitle     :: String
+  , kofiHandle    :: Maybe String
   , twitterHandle :: Maybe String -- Without @
   , githubUser    :: Maybe String
   , twitchHandle  :: Maybe String
