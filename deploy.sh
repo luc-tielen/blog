@@ -10,6 +10,7 @@ tar czf build.tar.gz build/
 
 echo "Updating blog content..."
 git checkout deploy
+git pull -p
 rm -rf build/
 tar xzf build.tar.gz
 rm build.tar.gz
