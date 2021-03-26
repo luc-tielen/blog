@@ -73,8 +73,13 @@ how we could do this for the snippet above, let's first introduce a phantom type
 variable to our handle:
 
 ```haskell
+{-# LANGUAGE RoleAnnotations #-}
+
 -- "prog" is a type variable referring to a corresponding Datalog program
 data Handle prog = ...
+-- The next line is needed to prevent users from coercing between
+-- handles with different phantom types:
+type role Handle nominal
 
 newtype SouffleM = ...
 
