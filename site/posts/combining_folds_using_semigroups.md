@@ -4,6 +4,7 @@ author: Luc Tielen
 date: Mar 27, 2021
 tags:
   - haskell
+image: combining_folds_using_semigroups.png
 ---
 
 In today's post, I will show how to combine many recursion-scheme folds
