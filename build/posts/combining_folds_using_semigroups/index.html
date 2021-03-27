@@ -182,14 +182,14 @@
 <p>Great! This is exactly what we want. We do only one fold over the datastructure and all actions are interleaved!</p>
 <h2 id="other-monads-than-io">Other monads than IO</h2>
 <p>While the approach using semigroups is short and sweet, it is not always possible to use it directly. This is because the monad that is being used needs to have a Semigroup instance (and IO just so happens to have an implementation for it). With a little more code, we can work around this limitation:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="ot">compose ::</span> (<span class="dt">Monad</span> m, <span class="dt">Monoid</span> b) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> m b) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> m b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> m b</span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="ot">compose ::</span> (<span class="dt">Monad</span> m, <span class="dt">Semigroup</span> b) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> m b) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> m b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> m b</span>
 <span id="cb9-2"><a href="#cb9-2"></a>compose f g a <span class="ot">=</span> <span class="kw">do</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a>  result1 <span class="ot">&lt;-</span> f a</span>
 <span id="cb9-4"><a href="#cb9-4"></a>  result2 <span class="ot">&lt;-</span> g a</span>
 <span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">pure</span> <span class="op">$</span> result1 <span class="op">&lt;&gt;</span> result2</span>
 <span id="cb9-6"><a href="#cb9-6"></a></span>
 <span id="cb9-7"><a href="#cb9-7"></a><span class="co">-- Or using applicative notation:</span></span>
-<span id="cb9-8"><a href="#cb9-8"></a><span class="ot">compose&#39; ::</span> (<span class="dt">Applicative</span> f, <span class="dt">Monoid</span> b) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> f b) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> f b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> f b</span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="ot">compose&#39; ::</span> (<span class="dt">Applicative</span> f, <span class="dt">Semigroup</span> b) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> f b) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> f b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> f b</span>
 <span id="cb9-9"><a href="#cb9-9"></a>compose&#39; f g a <span class="ot">=</span> (<span class="op">&lt;&gt;</span>) <span class="op">&lt;$&gt;</span> f a <span class="op">&lt;*&gt;</span> g a</span>
 <span id="cb9-10"><a href="#cb9-10"></a></span>
 <span id="cb9-11"><a href="#cb9-11"></a><span class="co">-- If you only care about side effects, you could use (*&gt;)</span></span>
