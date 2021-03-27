@@ -207,14 +207,14 @@ to have a Semigroup instance (and IO just so happens to have an implementation
 for it). With a little more code, we can work around this limitation:
 
 ```haskell
-compose :: (Monad m, Monoid b) => (a -> m b) -> (a -> m b) -> a -> m b
+compose :: (Monad m, Semigroup b) => (a -> m b) -> (a -> m b) -> a -> m b
 compose f g a = do
   result1 <- f a
   result2 <- g a
   pure $ result1 <> result2
 
 -- Or using applicative notation:
-compose' :: (Applicative f, Monoid b) => (a -> f b) -> (a -> f b) -> a -> f b
+compose' :: (Applicative f, Semigroup b) => (a -> f b) -> (a -> f b) -> a -> f b
 compose' f g a = (<>) <$> f a <*> g a
 
 -- If you only care about side effects, you could use (*>)
