@@ -10,7 +10,8 @@
 <meta name="twitter:creator" content="@luctielen">
 <meta name="twitter:title" content="Combining folds using semigroups">
     <meta name="twitter:description" content="">
-        <title>Combining folds using semigroups</title>
+    <meta name="twitter:image" content="https://luctielen.com/images/combining_folds_using_semigroups.png">
+    <title>Combining folds using semigroups</title>
     <link rel="icon" type="image/png" href="/images/favicon.png">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
@@ -54,6 +55,7 @@
     <div class="tags">
       <span class="tag tag-haskell"><a href="/tag/haskell">haskell</a></span>
     </div>
+    <img class="post-image" src="/images/combining_folds_using_semigroups.png"/>
     <p>In today's post, I will show how to combine many recursion-scheme folds using semigroups. For seasoned Haskellers using the library, this trick might be well known or obvious, but I decided to write it down anyway for the rest of us mere mortals <span class="emoji" data-emoji="smiley">😃</span>. I will assume a little familiarity with recursion-schemes though. If this isn't the case, be sure to check out the (recently revised) <a href="https://github.com/recursion-schemes/recursion-schemes/">recursion-schemes README</a> for an introduction to the library.</p>
 <h2 id="the-naive-or-straightforward-approach">The naive or straightforward approach</h2>
 <p>For our running example, let's take the idea of "static analysis" in a compiler. Here, the compiler executes many checks to make sure a program is semantically valid. Implemented in a straightforward way, each check is an (effectful) function that does a full traversal of the program AST to collect the analysis results. If we simplify this idea, we end up with the following:</p>
