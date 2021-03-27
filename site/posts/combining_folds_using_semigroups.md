@@ -111,8 +111,9 @@ However, this approach is not applicable for our static analysis running example
 due to the types not lining up. The result of the first function (`g` / `y`) needs
 to return a datastructure wrapped in `Fix` (but we return a `IO ()` value).
 
-The second approach Tim mentions (using the `(&&&)`-operator from
-`Control.Arrow`) *is* applicable:
+The second approach Tim mentions (using the
+[`(&&&)`](https://hackage.haskell.org/package/base-4.14.1.0/docs/Control-Arrow.html#v:-38--38--38-)-operator
+from `Control.Arrow`) *is* applicable:
 
 ```haskell
 cata f &&& cata g = cata alg where
