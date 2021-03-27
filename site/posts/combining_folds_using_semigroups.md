@@ -100,10 +100,10 @@ there's sequential composition:
 cata f . cata g = cata (f `comp` g) where
   -- 'comp' first applies the function 'y', unwraps a single layer of
   -- the Fix datastructure, and then finally applies the function 'x'
-  comp :: (f (Fix f) -> a)
+  comp :: (f (Fix f) -> Fix f)
        -> (g (Fix f) -> Fix f)
        -> g (Fix f)
-       -> a
+       -> Fix f
   comp x y = x . unfix . y
 ```
 
