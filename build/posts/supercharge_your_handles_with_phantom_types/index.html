@@ -86,20 +86,25 @@
 <p>The handle pattern helped to structure the API and to take care of resource management. However, you can still mis-use this API. For example, since facts have to be pre-defined for a Souffle program, it doesn't make sense to add a fact to a Souffle program that doesnt' understand it. Can we do better and prevent these kinds of logical mistakes?</p>
 <h2 id="enter-the-phantom-types">Enter the phantom types</h2>
 <p>If you take a look at the previous Haskell snippet, you will see that every function takes the handle datatype as an argument. This makes it a great candidate for doing compile-time checks based on type level information. To see how we could do this for the snippet above, let's first introduce a phantom type variable to our handle:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">-- &quot;prog&quot; is a type variable referring to a corresponding Datalog program</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">data</span> <span class="dt">Handle</span> prog <span class="ot">=</span> <span class="op">...</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">newtype</span> <span class="dt">SouffleM</span> <span class="ot">=</span> <span class="op">...</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a></span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="ot">addFact ::</span> <span class="dt">Fact</span> a <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="ot">getFacts ::</span> <span class="dt">Fact</span> a <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> [a]</span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="ot">run ::</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span>
-<span id="cb3-9"><a href="#cb3-9"></a></span>
-<span id="cb3-10"><a href="#cb3-10"></a><span class="co">-- Here we add an extra argument, so that Haskell can infer what type the</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a><span class="co">-- phantom type of the handle should be.</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a><span class="co">-- Note: another approach is to use &quot;TypeApplications&quot; (doesn&#39;t require an</span></span>
-<span id="cb3-13"><a href="#cb3-13"></a><span class="co">-- extra argument) to tell Haskell what the type of &quot;prog&quot; should be.</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a><span class="ot">runSouffle ::</span> prog <span class="ot">-&gt;</span> (<span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="ot">{-# LANGUAGE RoleAnnotations #-}</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">-- &quot;prog&quot; is a type variable referring to a corresponding Datalog program</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">data</span> <span class="dt">Handle</span> prog <span class="ot">=</span> <span class="op">...</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co">-- The next line is needed to prevent users from coercing between</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">-- handles with different phantom types:</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="kw">type</span> role <span class="dt">Handle</span> nominal</span>
+<span id="cb3-8"><a href="#cb3-8"></a></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="kw">newtype</span> <span class="dt">SouffleM</span> <span class="ot">=</span> <span class="op">...</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="ot">addFact ::</span> <span class="dt">Fact</span> a <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="ot">getFacts ::</span> <span class="dt">Fact</span> a <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> [a]</span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="ot">run ::</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span>
+<span id="cb3-14"><a href="#cb3-14"></a></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="co">-- Here we add an extra argument, so that Haskell can infer what type the</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="co">-- phantom type of the handle should be.</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="co">-- Note: another approach is to use &quot;TypeApplications&quot; (doesn&#39;t require an</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="co">-- extra argument) to tell Haskell what the type of &quot;prog&quot; should be.</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="ot">runSouffle ::</span> prog <span class="ot">-&gt;</span> (<span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span></code></pre></div>
 <p>This phantom type variable by itself doesn't do that much yet except for catching some type errors, but it does give us a starting point to start adding information on the type-level. One way to do this is by adding a constraint (based on the phantom type) to limit the possible scenarios a function can be used in. Conceptually this looks as follows:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="ot">myConstrainedFunc ::</span> <span class="dt">MyConstraint</span> prog <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span></code></pre></div>
 <h2 id="taking-it-a-step-further-with-typefamilies">Taking it a step further with TypeFamilies</h2>

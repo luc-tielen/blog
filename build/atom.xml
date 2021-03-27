@@ -2,12 +2,167 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2021-03-13T07:50:SZ</updated>
+  <updated>2021-03-27T07:53:SZ</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
   <id>https://luctielen.com/</id>
 
+  <entry>
+      <title>Combining folds using semigroups</title>
+      <link href="https://luctielen.com/posts/combining_folds_using_semigroups"/>
+      <id>https://luctielen.com/posts/combining_folds_using_semigroups</id>
+      <updated>2021-03-27T00:00:SZ</updated>
+      <category term="haskell"/>
+      <summary></summary>
+      <content type="html"><![CDATA[<p>In today's post, I will show how to combine many recursion-scheme folds using semigroups. For seasoned Haskellers using the library, this trick might be well known or obvious, but I decided to write it down anyway for the rest of us mere mortals <span class="emoji" data-emoji="smiley">😃</span>. I will assume a little familiarity with recursion-schemes though. If this isn't the case, be sure to check out the (recently revised) <a href="https://github.com/recursion-schemes/recursion-schemes/">recursion-schemes README</a> for an introduction to the library.</p>
+<h2 id="the-naive-or-straightforward-approach">The naive or straightforward approach</h2>
+<p>For our running example, let's take the idea of "static analysis" in a compiler. Here, the compiler executes many checks to make sure a program is semantically valid. Implemented in a straightforward way, each check is an (effectful) function that does a full traversal of the program AST to collect the analysis results. If we simplify this idea, we end up with the following:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span> <span class="dt">Data.Functor.Foldable</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span> <span class="dt">Data.Functor.Foldable.TH</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co">-- Our AST data type:</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">data</span> <span class="dt">Expr</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>  <span class="ot">=</span> <span class="dt">Constant</span> <span class="dt">Int</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>  <span class="op">|</span> <span class="dt">Add</span> <span class="dt">Expr</span> <span class="dt">Expr</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a></span>
+<span id="cb1-9"><a href="#cb1-9"></a>makeBaseFunctor &#39;<span class="dt">&#39;Expr</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="co">-- 1 + 2 + 3</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a><span class="ot">expr ::</span> <span class="dt">Expr</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>expr <span class="ot">=</span> <span class="dt">Constant</span> <span class="dv">1</span> <span class="ot">`Add`</span> <span class="dt">Constant</span> <span class="dv">2</span> <span class="ot">`Add`</span> <span class="dt">Constant</span> <span class="dv">3</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a></span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="co">-- An analysis pass is an effectful function (here IO is used</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a><span class="co">-- to print to the terminal):</span></span>
+<span id="cb1-17"><a href="#cb1-17"></a></span>
+<span id="cb1-18"><a href="#cb1-18"></a><span class="co">-- Two effectful functions that we want to combine:</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a>function1,<span class="ot"> function2 ::</span> <span class="dt">ExprF</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-20"><a href="#cb1-20"></a>function1 <span class="ot">=</span> function <span class="st">&quot;function1:&quot;</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a>function2 <span class="ot">=</span> function <span class="st">&quot;function2:&quot;</span></span>
+<span id="cb1-22"><a href="#cb1-22"></a></span>
+<span id="cb1-23"><a href="#cb1-23"></a><span class="co">-- An effectful function, prints out a prefix + a textual description</span></span>
+<span id="cb1-24"><a href="#cb1-24"></a><span class="co">-- of each node it encounters.</span></span>
+<span id="cb1-25"><a href="#cb1-25"></a><span class="ot">function ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">ExprF</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-26"><a href="#cb1-26"></a>function prefix <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb1-27"><a href="#cb1-27"></a>  <span class="dt">ConstantF</span> x <span class="ot">-&gt;</span></span>
+<span id="cb1-28"><a href="#cb1-28"></a>    <span class="fu">putStrLn</span> <span class="op">$</span> <span class="fu">unwords</span> [prefix, <span class="st">&quot;Constant&quot;</span>, <span class="fu">show</span> x]</span>
+<span id="cb1-29"><a href="#cb1-29"></a>  <span class="dt">AddF</span> action1 action2 <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb1-30"><a href="#cb1-30"></a>    action1</span>
+<span id="cb1-31"><a href="#cb1-31"></a>    <span class="fu">putStrLn</span> <span class="op">$</span> <span class="fu">unwords</span> [prefix, <span class="st">&quot;Add&quot;</span>]</span>
+<span id="cb1-32"><a href="#cb1-32"></a>    action2</span>
+<span id="cb1-33"><a href="#cb1-33"></a></span>
+<span id="cb1-34"><a href="#cb1-34"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-35"><a href="#cb1-35"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb1-36"><a href="#cb1-36"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Running function1:&quot;</span></span>
+<span id="cb1-37"><a href="#cb1-37"></a>  results1 <span class="ot">&lt;-</span> cata function1 expr</span>
+<span id="cb1-38"><a href="#cb1-38"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Running function2:&quot;</span></span>
+<span id="cb1-39"><a href="#cb1-39"></a>  results2 <span class="ot">&lt;-</span> cata function2 expr</span>
+<span id="cb1-40"><a href="#cb1-40"></a>  <span class="co">-- ... do something with results</span></span></code></pre></div>
+<p>Running the snippet above gives us the following output:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a>$ <span class="ex">stack</span> run  <span class="co"># Assuming we are in a stack project</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">Running</span> function1:</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="ex">function1</span>: Constant 1</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="ex">function1</span>: Add</span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="ex">function1</span>: Constant 2</span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="ex">function1</span>: Add</span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="ex">function1</span>: Constant 3</span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="ex">Running</span> function2:</span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="ex">function2</span>: Constant 1</span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="ex">function2</span>: Add</span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="ex">function2</span>: Constant 2</span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="ex">function2</span>: Add</span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="ex">function2</span>: Constant 3</span></code></pre></div>
+<p>You can see that each traversal happens one after the other. Ideally though, we would like to collect all analysis results using a single traversal/fold. Let's try and figure out how we can achieve that.</p>
+<h2 id="attempt-1-using-function-composition">Attempt 1: Using function composition</h2>
+<p>Others have already thought of ways to compose folds using recursion schemes. Tim Williams has a great <a href="https://github.com/willtim/recursion-schemes/raw/master/slides-final.pdf">presentation</a> about recursion schemes where he shows techniques for composing them. First of, there's sequential composition:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">-- Note: not valid Haskell, &#39;=&#39; is mathematical equality</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>cata f <span class="op">.</span> cata g <span class="ot">=</span> cata (f <span class="ot">`comp`</span> g) <span class="kw">where</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="co">-- &#39;comp&#39; first applies the function &#39;y&#39;, unwraps a single layer of</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>  <span class="co">-- the Fix datastructure, and then finally applies the function &#39;x&#39;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="ot">  comp ::</span> (f (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> a)</span>
+<span id="cb3-6"><a href="#cb3-6"></a>       <span class="ot">-&gt;</span> (g (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> <span class="dt">Fix</span> f)</span>
+<span id="cb3-7"><a href="#cb3-7"></a>       <span class="ot">-&gt;</span> g (<span class="dt">Fix</span> f)</span>
+<span id="cb3-8"><a href="#cb3-8"></a>       <span class="ot">-&gt;</span> a</span>
+<span id="cb3-9"><a href="#cb3-9"></a>  comp x y <span class="ot">=</span> x <span class="op">.</span> unfix <span class="op">.</span> y</span></code></pre></div>
+<p>However, this approach is not applicable for our static analysis running example due to the types not lining up. The result of the first function (<code>g</code> / <code>y</code>) needs to return a datastructure wrapped in <code>Fix</code> (but we return a <code>IO ()</code> value).</p>
+<p>The second approach Tim mentions (using the <code>(&amp;&amp;&amp;)</code>-operator from <code>Control.Arrow</code>) <em>is</em> applicable:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a>cata f <span class="op">&amp;&amp;&amp;</span> cata g <span class="ot">=</span> cata alg <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="co">-- f :: f a -&gt; a</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="co">-- g :: f b -&gt; b</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="ot">  alg ::</span> f (a, b) <span class="ot">-&gt;</span> (a, b)</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  alg <span class="ot">=</span> f <span class="op">.</span> <span class="fu">fmap</span> <span class="fu">fst</span> <span class="op">&amp;&amp;&amp;</span> g <span class="op">.</span> <span class="fu">fmap</span> <span class="fu">snd</span></span></code></pre></div>
+<p>For "simple" values, this works great. However, this approach has the same problem as before when you return a function or monadic result instead. To illustrate this, let's run the snippet below:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">-- Note that alg returns a tuple of two IO actions now, instead of one!</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">alg ::</span> <span class="dt">ExprF</span> (<span class="dt">IO</span> (), <span class="dt">IO</span> ()) <span class="ot">-&gt;</span> (<span class="dt">IO</span> (), <span class="dt">IO</span> ())</span>
+<span id="cb5-3"><a href="#cb5-3"></a>alg <span class="ot">=</span> (function1 <span class="op">.</span> <span class="fu">fmap</span> <span class="fu">fst</span>) <span class="op">&amp;&amp;&amp;</span> (function2 <span class="op">.</span> <span class="fu">fmap</span> <span class="fu">snd</span>)</span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-6"><a href="#cb5-6"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>  <span class="kw">let</span> (action1, action2) <span class="ot">=</span> cata alg expr</span>
+<span id="cb5-8"><a href="#cb5-8"></a>  action1</span>
+<span id="cb5-9"><a href="#cb5-9"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;action1 finished, now action2:&quot;</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a>  action2</span></code></pre></div>
+<p>This gives us the following output:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a>$ <span class="ex">stack</span> run</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="ex">function1</span>: Constant 1</span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="ex">function1</span>: Add</span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="ex">function1</span>: Constant 2</span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="ex">function1</span>: Add</span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="ex">function1</span>: Constant 3</span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="ex">action1</span> finished, now action2:</span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="ex">function2</span>: Constant 1</span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="ex">function2</span>: Add</span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="ex">function2</span>: Constant 2</span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="ex">function2</span>: Add</span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="ex">function2</span>: Constant 3</span></code></pre></div>
+<p>This is the same behavior as we had before. We perform only one fold now, but then we <em>still</em> have to run the actions separately. That's not what we want! Back to the drawing board!</p>
+<h2 id="attempt-2-using-semigroups">Attempt 2: Using semigroups</h2>
+<p>We tried some forms of composition so far that didn't work out, but luckily Haskell has many more ways of composing expressions together. One that is often used is <code>(&lt;&gt;)</code> / <code>mappend</code> from the <code>Semigroup</code> typeclass. Here's what that looks like:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb7-2"><a href="#cb7-2"></a>main <span class="ot">=</span> cata alg expr <span class="kw">where</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="co">-- alg / function1 / function2 are a Semigroup because:</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>  <span class="co">-- A function is a Semigroup if it&#39;s result is a Semigroup;</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="co">-- &#39;IO a&#39; is a Semigroup if &#39;a&#39; is a Semigroup;</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>  <span class="co">-- () is a Semigroup.</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="ot">  alg ::</span> <span class="dt">ExprF</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb7-8"><a href="#cb7-8"></a>  alg <span class="ot">=</span> function1 <span class="op">&lt;&gt;</span> function2</span></code></pre></div>
+<p>Effectively, this calls the 2 functions in a row, and then combines the results. Running this code shows all effectful actions are interleaved as we'd expect:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a>$ <span class="ex">stack</span> run</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="ex">function1</span>: Constant 1</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="ex">function2</span>: Constant 1</span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="ex">function1</span>: Add</span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="ex">function2</span>: Add</span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="ex">function1</span>: Constant 2</span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="ex">function2</span>: Constant 2</span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="ex">function1</span>: Add</span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="ex">function2</span>: Add</span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="ex">function1</span>: Constant 3</span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="ex">function2</span>: Constant 3</span></code></pre></div>
+<p>Great! This is exactly what we want. We do only one fold over the datastructure and all actions are interleaved!</p>
+<h2 id="other-monads-than-io">Other monads than IO</h2>
+<p>While the approach using semigroups is short and sweet, it is not always possible to use it directly. This is because the monad that is being used needs to have a Semigroup instance (and IO just so happens to have an implementation for it). With a little more code, we can work around this limitation:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="ot">compose ::</span> (<span class="dt">Monad</span> m, <span class="dt">Monoid</span> b) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> m b) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> m b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> m b</span>
+<span id="cb9-2"><a href="#cb9-2"></a>compose f g a <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>  result1 <span class="ot">&lt;-</span> f a</span>
+<span id="cb9-4"><a href="#cb9-4"></a>  result2 <span class="ot">&lt;-</span> g a</span>
+<span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">pure</span> <span class="op">$</span> result1 <span class="op">&lt;&gt;</span> result2</span>
+<span id="cb9-6"><a href="#cb9-6"></a></span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="co">-- Or using applicative notation:</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="ot">compose&#39; ::</span> (<span class="dt">Applicative</span> f, <span class="dt">Monoid</span> b) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> f b) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> f b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> f b</span>
+<span id="cb9-9"><a href="#cb9-9"></a>compose&#39; f g a <span class="ot">=</span> (<span class="op">&lt;&gt;</span>) <span class="op">&lt;$&gt;</span> f a <span class="op">&lt;*&gt;</span> g a</span>
+<span id="cb9-10"><a href="#cb9-10"></a></span>
+<span id="cb9-11"><a href="#cb9-11"></a><span class="co">-- If you only care about side effects, you could use (*&gt;)</span></span>
+<span id="cb9-12"><a href="#cb9-12"></a><span class="co">-- instead of (&lt;&gt;) as well.</span></span>
+<span id="cb9-13"><a href="#cb9-13"></a></span>
+<span id="cb9-14"><a href="#cb9-14"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb9-15"><a href="#cb9-15"></a>main <span class="ot">=</span> cata alg expr <span class="kw">where</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a>  alg <span class="ot">=</span> compose function1 function2</span></code></pre></div>
+<p>With the "compose" function, you can now also use the same approach for monads that don't implement Semigroup (such as Reader/State/...). Nice!</p>
+<h2 id="wrapping-up">Wrapping up</h2>
+<p>In this article I showed 3 approaches to combining many smaller folds into one fused fold. Though not all approaches may be applicable for a specific situation, there are always multiple options to choose from when combining functions in this way.</p>
+<p>I need to point out that while I used the recursion-schemes library, the same approach is possible if you use "normal" recursive functions (but maybe with a little more work).</p>
+<p>If you are interested in more content like this, follow me on <a href="https://twitter.com/luctielen">Twitter</a>. Feel free to contact me if you have any questions or comments about this topic.</p>]]></content>
+  </entry>
   <entry>
       <title>Supercharge your handles using phantom types</title>
       <link href="https://luctielen.com/posts/supercharge_your_handles_with_phantom_types"/>
@@ -47,20 +202,25 @@
 <p>The handle pattern helped to structure the API and to take care of resource management. However, you can still mis-use this API. For example, since facts have to be pre-defined for a Souffle program, it doesn't make sense to add a fact to a Souffle program that doesnt' understand it. Can we do better and prevent these kinds of logical mistakes?</p>
 <h2 id="enter-the-phantom-types">Enter the phantom types</h2>
 <p>If you take a look at the previous Haskell snippet, you will see that every function takes the handle datatype as an argument. This makes it a great candidate for doing compile-time checks based on type level information. To see how we could do this for the snippet above, let's first introduce a phantom type variable to our handle:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">-- &quot;prog&quot; is a type variable referring to a corresponding Datalog program</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">data</span> <span class="dt">Handle</span> prog <span class="ot">=</span> <span class="op">...</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">newtype</span> <span class="dt">SouffleM</span> <span class="ot">=</span> <span class="op">...</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a></span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="ot">addFact ::</span> <span class="dt">Fact</span> a <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="ot">getFacts ::</span> <span class="dt">Fact</span> a <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> [a]</span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="ot">run ::</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span>
-<span id="cb3-9"><a href="#cb3-9"></a></span>
-<span id="cb3-10"><a href="#cb3-10"></a><span class="co">-- Here we add an extra argument, so that Haskell can infer what type the</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a><span class="co">-- phantom type of the handle should be.</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a><span class="co">-- Note: another approach is to use &quot;TypeApplications&quot; (doesn&#39;t require an</span></span>
-<span id="cb3-13"><a href="#cb3-13"></a><span class="co">-- extra argument) to tell Haskell what the type of &quot;prog&quot; should be.</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a><span class="ot">runSouffle ::</span> prog <span class="ot">-&gt;</span> (<span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="ot">{-# LANGUAGE RoleAnnotations #-}</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">-- &quot;prog&quot; is a type variable referring to a corresponding Datalog program</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">data</span> <span class="dt">Handle</span> prog <span class="ot">=</span> <span class="op">...</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co">-- The next line is needed to prevent users from coercing between</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">-- handles with different phantom types:</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="kw">type</span> role <span class="dt">Handle</span> nominal</span>
+<span id="cb3-8"><a href="#cb3-8"></a></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="kw">newtype</span> <span class="dt">SouffleM</span> <span class="ot">=</span> <span class="op">...</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="ot">addFact ::</span> <span class="dt">Fact</span> a <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="ot">getFacts ::</span> <span class="dt">Fact</span> a <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> [a]</span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="ot">run ::</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span>
+<span id="cb3-14"><a href="#cb3-14"></a></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="co">-- Here we add an extra argument, so that Haskell can infer what type the</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="co">-- phantom type of the handle should be.</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="co">-- Note: another approach is to use &quot;TypeApplications&quot; (doesn&#39;t require an</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="co">-- extra argument) to tell Haskell what the type of &quot;prog&quot; should be.</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="ot">runSouffle ::</span> prog <span class="ot">-&gt;</span> (<span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> a) <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span></code></pre></div>
 <p>This phantom type variable by itself doesn't do that much yet except for catching some type errors, but it does give us a starting point to start adding information on the type-level. One way to do this is by adding a constraint (based on the phantom type) to limit the possible scenarios a function can be used in. Conceptually this looks as follows:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="ot">myConstrainedFunc ::</span> <span class="dt">MyConstraint</span> prog <span class="ot">=&gt;</span> <span class="dt">Handle</span> prog <span class="ot">-&gt;</span> <span class="dt">SouffleM</span> ()</span></code></pre></div>
 <h2 id="taking-it-a-step-further-with-typefamilies">Taking it a step further with TypeFamilies</h2>

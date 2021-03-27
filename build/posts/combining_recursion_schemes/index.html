@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="FP -&gt; Compilers -&gt; Logic -&gt; Blog">
+    <meta name="author" content="Luc Tielen">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="Combining folds using semigroups">
+    <meta name="twitter:description" content="">
+        <title>Combining folds using semigroups</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <script type="text/javascript" src="/js/main.js"></script>
+  </head>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://ko-fi.com/luctielen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734c4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09c-.443-.441-3.368-3.049-4.034-3.954c-.709-.965-1.041-2.7-.091-3.71c.951-1.01 3.005-1.086 4.363.407c0 0 1.565-1.782 3.468-.963c1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/></svg>
+      </a>
+      <a href="https://twitter.com/luctielen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M16 3.538a6.461 6.461 0 01-1.884.516 3.301 3.301 0 001.444-1.816 6.607 6.607 0 01-2.084.797 3.28 3.28 0 00-2.397-1.034 3.28 3.28 0 00-3.197 4.028 9.321 9.321 0 01-6.766-3.431 3.284 3.284 0 001.015 4.381A3.301 3.301 0 01.643 6.57v.041A3.283 3.283 0 003.277 9.83a3.291 3.291 0 01-1.485.057 3.293 3.293 0 003.066 2.281 6.586 6.586 0 01-4.862 1.359 9.286 9.286 0 005.034 1.475c6.037 0 9.341-5.003 9.341-9.341 0-.144-.003-.284-.009-.425a6.59 6.59 0 001.637-1.697z"/></svg>
+      </a>
+      <a href="https://github.com/luc-tielen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M8 .198a8 8 0 00-2.529 15.591c.4.074.547-.174.547-.385 0-.191-.008-.821-.011-1.489-2.226.484-2.695-.944-2.695-.944-.364-.925-.888-1.171-.888-1.171-.726-.497.055-.486.055-.486.803.056 1.226.824 1.226.824.714 1.223 1.872.869 2.328.665.072-.517.279-.87.508-1.07-1.777-.202-3.645-.888-3.645-3.954 0-.873.313-1.587.824-2.147-.083-.202-.357-1.015.077-2.117 0 0 .672-.215 2.201.82A7.672 7.672 0 018 4.066c.68.003 1.365.092 2.004.269 1.527-1.035 2.198-.82 2.198-.82.435 1.102.162 1.916.079 2.117.513.56.823 1.274.823 2.147 0 3.073-1.872 3.749-3.653 3.947.287.248.543.735.543 1.481 0 1.07-.009 1.932-.009 2.195 0 .213.144.462.55.384A8 8 0 008.001.196z"/></svg>
+      </a>
+      <a href="https://twitch.tv/luctielen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2.149 0l-1.612 4.119v16.836h5.731v3.045h3.224l3.045-3.045h4.657l6.269-6.269v-14.686h-21.314zm19.164 13.612l-3.582 3.582h-5.731l-3.045 3.045v-3.045h-4.836v-15.045h17.194v11.463zm-3.582-7.343v6.262h-2.149v-6.262h2.149zm-5.731 0v6.262h-2.149v-6.262h2.149z"/></svg>
+      </a>
+      <a href="https://www.youtube.com/channel/UCeMz1NwTQlkhQvIFYMZoAJQ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+        </a>
+      <a href="/atom.xml">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"/></svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="post">
+    <h1>Combining folds using semigroups</h1>
+    <!--
+    <span class="date">Apr 1, 2021</span>
+    -->
+    <div class="tags">
+      <span class="tag tag-haskell"><a href="/tag/haskell">haskell</a></span>
+    </div>
+    <p>In today's post, I will show how to combine many recursion-scheme folds using semigroups. For seasoned Haskellers using the library, this trick might be well known or obvious, but I decided to write it down anyway for the rest of us mere mortals <span class="emoji" data-emoji="smiley">😃</span>. I will assume a little familiarity with recursion-schemes though. If this isn't the case, be sure to check out the (recently revised) <a href="https://github.com/recursion-schemes/recursion-schemes/">recursion-schemes README</a> for an introduction to the library.</p>
+<h2 id="the-naive-or-straightforward-approach">The naive or straightforward approach</h2>
+<p>For our running example, let's take the idea of "static analysis" in a compiler. Here, the compiler executes many checks to make sure a program is semantically valid. Implemented in a straightforward way, each check is an (effectful) function that does a full traversal of the program AST to collect the analysis results. If we simplify this idea, we end up with the following:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span> <span class="dt">Data.Functor.Foldable</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">import</span> <span class="dt">Data.Functor.Foldable.TH</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co">-- Our AST data type:</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">data</span> <span class="dt">Expr</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>  <span class="ot">=</span> <span class="dt">Constant</span> <span class="dt">Int</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>  <span class="op">|</span> <span class="dt">Add</span> <span class="dt">Expr</span> <span class="dt">Expr</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a></span>
+<span id="cb1-9"><a href="#cb1-9"></a>makeBaseFunctor &#39;<span class="dt">&#39;Expr</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="co">-- 1 + 2 + 3</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a><span class="ot">expr ::</span> <span class="dt">Expr</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>expr <span class="ot">=</span> <span class="dt">Constant</span> <span class="dv">1</span> <span class="ot">`Add`</span> <span class="dt">Constant</span> <span class="dv">2</span> <span class="ot">`Add`</span> <span class="dt">Constant</span> <span class="dv">3</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a></span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="co">-- An analysis pass is an effectful function (here IO is used</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a><span class="co">-- to print to the terminal):</span></span>
+<span id="cb1-17"><a href="#cb1-17"></a></span>
+<span id="cb1-18"><a href="#cb1-18"></a><span class="co">-- Two effectful functions that we want to combine:</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a>function1,<span class="ot"> function2 ::</span> <span class="dt">ExprF</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-20"><a href="#cb1-20"></a>function1 <span class="ot">=</span> function <span class="st">&quot;function1:&quot;</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a>function2 <span class="ot">=</span> function <span class="st">&quot;function2:&quot;</span></span>
+<span id="cb1-22"><a href="#cb1-22"></a></span>
+<span id="cb1-23"><a href="#cb1-23"></a><span class="co">-- An effectful function, prints out a prefix + a textual description</span></span>
+<span id="cb1-24"><a href="#cb1-24"></a><span class="co">-- of each node it encounters.</span></span>
+<span id="cb1-25"><a href="#cb1-25"></a><span class="ot">function ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">ExprF</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-26"><a href="#cb1-26"></a>function prefix <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb1-27"><a href="#cb1-27"></a>  <span class="dt">ConstantF</span> x <span class="ot">-&gt;</span></span>
+<span id="cb1-28"><a href="#cb1-28"></a>    <span class="fu">putStrLn</span> <span class="op">$</span> <span class="fu">unwords</span> [prefix, <span class="st">&quot;Constant&quot;</span>, <span class="fu">show</span> x]</span>
+<span id="cb1-29"><a href="#cb1-29"></a>  <span class="dt">AddF</span> action1 action2 <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb1-30"><a href="#cb1-30"></a>    action1</span>
+<span id="cb1-31"><a href="#cb1-31"></a>    <span class="fu">putStrLn</span> <span class="op">$</span> <span class="fu">unwords</span> [prefix, <span class="st">&quot;Add&quot;</span>]</span>
+<span id="cb1-32"><a href="#cb1-32"></a>    action2</span>
+<span id="cb1-33"><a href="#cb1-33"></a></span>
+<span id="cb1-34"><a href="#cb1-34"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb1-35"><a href="#cb1-35"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb1-36"><a href="#cb1-36"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Running function1:&quot;</span></span>
+<span id="cb1-37"><a href="#cb1-37"></a>  results1 <span class="ot">&lt;-</span> cata function1 expr</span>
+<span id="cb1-38"><a href="#cb1-38"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;Running function2:&quot;</span></span>
+<span id="cb1-39"><a href="#cb1-39"></a>  results2 <span class="ot">&lt;-</span> cata function2 expr</span>
+<span id="cb1-40"><a href="#cb1-40"></a>  <span class="co">-- ... do something with results</span></span></code></pre></div>
+<p>Running the snippet above gives us the following output:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a>$ <span class="ex">stack</span> run  <span class="co"># Assuming we are in a stack project</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">Running</span> function1:</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="ex">function1</span>: Constant 1</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="ex">function1</span>: Add</span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="ex">function1</span>: Constant 2</span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="ex">function1</span>: Add</span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="ex">function1</span>: Constant 3</span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="ex">Running</span> function2:</span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="ex">function2</span>: Constant 1</span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="ex">function2</span>: Add</span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="ex">function2</span>: Constant 2</span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="ex">function2</span>: Add</span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="ex">function2</span>: Constant 3</span></code></pre></div>
+<p>You can see that each traversal happens one after the other. Ideally though, we would like to collect all analysis results using a single traversal/fold. Let's try and see how we can achieve that.</p>
+<h2 id="attempt-1-using-function-composition">Attempt 1: Using function composition</h2>
+<p>Others have already thought of ways to compose folds using recursion schemes. Tim Williams has a great <a href="https://github.com/willtim/recursion-schemes/raw/master/slides-final.pdf">presentation</a> about recursion schemes where he shows techniques for composing them. First of, there's sequential composition:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">-- Note: not valid Haskell, &#39;=&#39; is mathematical equality</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>cata f <span class="op">.</span> cata g <span class="ot">=</span> cata (f <span class="ot">`comp`</span> g) <span class="kw">where</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="co">-- &#39;comp&#39; first applies the function &#39;y&#39;, unwraps a single layer of</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>  <span class="co">-- the Fix datastructure, and then finally applies the function &#39;x&#39;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="ot">  comp ::</span> (f (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> a)</span>
+<span id="cb3-6"><a href="#cb3-6"></a>       <span class="ot">-&gt;</span> (g (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> <span class="dt">Fix</span> f)</span>
+<span id="cb3-7"><a href="#cb3-7"></a>       <span class="ot">-&gt;</span> g (<span class="dt">Fix</span> f)</span>
+<span id="cb3-8"><a href="#cb3-8"></a>       <span class="ot">-&gt;</span> a</span>
+<span id="cb3-9"><a href="#cb3-9"></a>  comp x y <span class="ot">=</span> x <span class="op">.</span> unfix <span class="op">.</span> y</span></code></pre></div>
+<p>However, this approach is not applicable for our static analysis running example due to the types not lining up. The result of the first function (<code>g</code> / <code>y</code>) needs to return a datastructure wrapped in <code>Fix</code> (but we return a <code>IO ()</code> value).</p>
+<p>The second approach Tim mentions (using the <code>(&amp;&amp;&amp;)</code>-operator from <code>Control.Arrow</code>) <em>is</em> applicable:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a>cata f <span class="op">&amp;&amp;&amp;</span> cata g <span class="ot">=</span> cata alg <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="co">-- f :: f a -&gt; a</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="co">-- g :: f b -&gt; b</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="ot">  alg ::</span> f (a, b) <span class="ot">-&gt;</span> (a, b)</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  alg <span class="ot">=</span> f <span class="op">.</span> <span class="fu">fmap</span> <span class="fu">fst</span> <span class="op">&amp;&amp;&amp;</span> g <span class="op">.</span> <span class="fu">fmap</span> <span class="fu">snd</span></span></code></pre></div>
+<p>For "simple" values, this works great. However, this approach has the same problem as before when you return a function or monadic result instead. To illustrate this, let's run the snippet below:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">-- Note that alg returns a tuple of two IO actions now, instead of one!</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">alg ::</span> <span class="dt">ExprF</span> (<span class="dt">IO</span> (), <span class="dt">IO</span> ()) <span class="ot">-&gt;</span> (<span class="dt">IO</span> (), <span class="dt">IO</span> ())</span>
+<span id="cb5-3"><a href="#cb5-3"></a>alg <span class="ot">=</span> (function1 <span class="op">.</span> <span class="fu">fmap</span> <span class="fu">fst</span>) <span class="op">&amp;&amp;&amp;</span> (function2 <span class="op">.</span> <span class="fu">fmap</span> <span class="fu">snd</span>)</span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-6"><a href="#cb5-6"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>  <span class="kw">let</span> (action1, action2) <span class="ot">=</span> cata alg expr</span>
+<span id="cb5-8"><a href="#cb5-8"></a>  action1</span>
+<span id="cb5-9"><a href="#cb5-9"></a>  <span class="fu">putStrLn</span> <span class="st">&quot;action1 finished, now action2:&quot;</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a>  action2</span></code></pre></div>
+<p>This gives us the following output:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a>$ <span class="ex">stack</span> run</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="ex">function1</span>: Constant 1</span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="ex">function1</span>: Add</span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="ex">function1</span>: Constant 2</span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="ex">function1</span>: Add</span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="ex">function1</span>: Constant 3</span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="ex">action1</span> finished, now action2:</span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="ex">function2</span>: Constant 1</span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="ex">function2</span>: Add</span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="ex">function2</span>: Constant 2</span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="ex">function2</span>: Add</span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="ex">function2</span>: Constant 3</span></code></pre></div>
+<p>This is the same behavior as we had before. We perform only one fold now, but then we <em>still</em> have to run the actions separately. That's not what we want! Back to the drawing board!</p>
+<h2 id="attempt-2-using-semigroups">Attempt 2: Using semigroups</h2>
+<p>We tried some forms of composition so far that didn't work out, but luckily Haskell has many more ways of composing expressions together. One that is often used is <code>(&lt;&gt;)</code> / <code>mappend</code> from the <code>Semigroup</code> typeclass. Let's see what that looks like:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb7-2"><a href="#cb7-2"></a>main <span class="ot">=</span> cata alg expr <span class="kw">where</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="co">-- alg / function1 / function2 are a Semigroup because:</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>  <span class="co">-- A function is a Semigroup if it&#39;s result is a Semigroup;</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="co">-- &#39;IO a&#39; is a Semigroup if &#39;a&#39; is a Semigroup;</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>  <span class="co">-- () is a Semigroup.</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="ot">  alg ::</span> <span class="dt">ExprF</span> (<span class="dt">IO</span> ()) <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb7-8"><a href="#cb7-8"></a>  alg <span class="ot">=</span> function1 <span class="op">&lt;&gt;</span> function2</span></code></pre></div>
+<p>Effectively, this calls the 2 functions in a row, and then combines the results. Running this code shows all effectful actions are interleaved as we'd expect:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a>$ <span class="ex">stack</span> run</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="ex">function1</span>: Constant 1</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="ex">function2</span>: Constant 1</span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="ex">function1</span>: Add</span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="ex">function2</span>: Add</span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="ex">function1</span>: Constant 2</span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="ex">function2</span>: Constant 2</span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="ex">function1</span>: Add</span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="ex">function2</span>: Add</span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="ex">function1</span>: Constant 3</span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="ex">function2</span>: Constant 3</span></code></pre></div>
+<p>Great! This is exactly what we want. We do only one fold over the datastructure and all actions are interleaved.</p>
+<h2 id="other-monads-than-io">Other monads than IO</h2>
+<p>While the approach using semigroups is short and sweet, it is not always possible to use it directly. This is because the monad that is being used needs to have a Semigroup instance (and IO just so happens to have an implementation for it). With a little more code, we can work around this limitation:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="ot">compose ::</span> (<span class="dt">Monad</span> m, <span class="dt">Monoid</span> b) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> m b) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> m b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> m b</span>
+<span id="cb9-2"><a href="#cb9-2"></a>compose f g a <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>  result1 <span class="ot">&lt;-</span> f a</span>
+<span id="cb9-4"><a href="#cb9-4"></a>  result2 <span class="ot">&lt;-</span> g a</span>
+<span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">pure</span> <span class="op">$</span> result1 <span class="op">&lt;&gt;</span> result2</span>
+<span id="cb9-6"><a href="#cb9-6"></a></span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="co">-- Or using applicative notation:</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="ot">compose&#39; ::</span> (<span class="dt">Applicative</span> f, <span class="dt">Monoid</span> b) <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> f b) <span class="ot">-&gt;</span> (a <span class="ot">-&gt;</span> f b) <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> f b</span>
+<span id="cb9-9"><a href="#cb9-9"></a>compose&#39; f g a <span class="ot">=</span> (<span class="op">&lt;&gt;</span>) <span class="op">&lt;$&gt;</span> f a <span class="op">&lt;*&gt;</span> g a</span>
+<span id="cb9-10"><a href="#cb9-10"></a></span>
+<span id="cb9-11"><a href="#cb9-11"></a><span class="co">-- If you only care about side effects, you could use (*&gt;)</span></span>
+<span id="cb9-12"><a href="#cb9-12"></a><span class="co">-- instead of (&lt;&gt;) as well.</span></span>
+<span id="cb9-13"><a href="#cb9-13"></a></span>
+<span id="cb9-14"><a href="#cb9-14"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb9-15"><a href="#cb9-15"></a>main <span class="ot">=</span> cata alg expr <span class="kw">where</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a>  alg <span class="ot">=</span> compose function1 function2</span></code></pre></div>
+<p>With the "compose" function, you can now also use the same approach for monads that don't implement Semigroup (such as Reader/State/...). Nice!</p>
+<h2 id="wrapping-up">Wrapping up</h2>
+<p>In this article I showed 3 approaches to combining many smaller folds into one fused fold. Though not all approaches may be applicable for a specific situation, there are always many options to choose from when combining functions in this way.</p>
+<p>I need to point out that while I used the recursion-schemes library, the same approach is possible if you use "normal" recursive functions (but maybe with a little more work).</p>
+<p>If you are interested in more content like this, follow me on <a href="https://twitter.com/luctielen">Twitter</a>. Feel free to contact me if you have any questions or comments about this topic.</p>
+    <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
+         style="display:none;" width="1" height="1"/>
+  </main>
+</body>
