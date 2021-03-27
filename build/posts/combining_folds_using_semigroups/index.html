@@ -126,7 +126,7 @@
 <span id="cb3-8"><a href="#cb3-8"></a>       <span class="ot">-&gt;</span> a</span>
 <span id="cb3-9"><a href="#cb3-9"></a>  comp x y <span class="ot">=</span> x <span class="op">.</span> unfix <span class="op">.</span> y</span></code></pre></div>
 <p>However, this approach is not applicable for our static analysis running example due to the types not lining up. The result of the first function (<code>g</code> / <code>y</code>) needs to return a datastructure wrapped in <code>Fix</code> (but we return a <code>IO ()</code> value).</p>
-<p>The second approach Tim mentions (using the <code>(&amp;&amp;&amp;)</code>-operator from <code>Control.Arrow</code>) <em>is</em> applicable:</p>
+<p>The second approach Tim mentions (using the <a href="https://hackage.haskell.org/package/base-4.14.1.0/docs/Control-Arrow.html#v:-38--38--38-"><code>(&amp;&amp;&amp;)</code></a>-operator from <code>Control.Arrow</code>) <em>is</em> applicable:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a>cata f <span class="op">&amp;&amp;&amp;</span> cata g <span class="ot">=</span> cata alg <span class="kw">where</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a>  <span class="co">-- f :: f a -&gt; a</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a>  <span class="co">-- g :: f b -&gt; b</span></span>
