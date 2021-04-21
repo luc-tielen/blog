@@ -70,6 +70,7 @@ data SiteMeta
 data IndexInfo
   = IndexInfo
   { posts :: [Post]
+  , allTags :: Set Tag
   } deriving (Generic, Show, FromJSON, ToJSON)
 
 data IndexWithTagInfo
@@ -103,10 +104,10 @@ data AtomData
   } deriving (Generic, ToJSON, Eq, Ord, Show)
 
 -- | Given a list of posts this will build a table of contents
-buildIndex :: [Post] -> Action ()
-buildIndex posts' = do
+buildIndex :: [Post] -> Set Tag -> Action ()
+buildIndex posts' tags' = do
   indexT <- compileTemplate' "site/templates/index.html"
-  let indexInfo = IndexInfo {posts = posts'}
+  let indexInfo = IndexInfo {posts = posts', allTags = tags'}
       html = T.unpack $ substitute indexT (withSiteMeta $ toJSON indexInfo)
   writeFile' (outputFolder </> "index.html") html
 
@@ -205,7 +206,7 @@ buildRules :: Action ()
 buildRules = do
   allPosts <- sortByDate <$> buildPosts
   let allTags = extractUniqueTags allPosts
-  buildIndex allPosts
+  buildIndex allPosts allTags
   buildTaggedIndex allTags allPosts
   buildFeed allPosts
   buildAbout
