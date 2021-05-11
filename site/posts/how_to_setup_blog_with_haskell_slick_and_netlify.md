@@ -1,7 +1,7 @@
 ---
 title: How to set up your blog with Haskell, Slick and Netlify
 author: Luc Tielen
-date: Dec 21, 2020
+postDate: Dec 21, 2020
 tags:
   - haskell
   - meta
