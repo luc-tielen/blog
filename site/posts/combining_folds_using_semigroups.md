@@ -1,7 +1,7 @@
 ---
 title: Combining folds using semigroups
 author: Luc Tielen
-date: Mar 27, 2021
+postDate: Mar 27, 2021
 tags:
   - haskell
 image: combining_folds_using_semigroups.png

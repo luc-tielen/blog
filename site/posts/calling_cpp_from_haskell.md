@@ -1,7 +1,7 @@
 ---
 title: Calling C++ from Haskell
 author: Luc Tielen
-date: Jan 12, 2021
+postDate: Jan 12, 2021
 tags:
   - haskell
   - c++

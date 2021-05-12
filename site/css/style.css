@@ -164,6 +164,7 @@ p {
     margin-block-end: 0;
 }
 
+/* Posts */
 ul.posts {
     margin-top: 1rem;
     list-style: none;
@@ -180,7 +181,6 @@ ul.posts li span {
     min-width: 10rem;
 }
 
-/* Posts */
 .post {
     padding-bottom: 3em;
 }
@@ -194,6 +194,40 @@ ul.posts li span {
 }
 
 .post p {
+    line-height: 1.5;
+    margin-bottom: 1em;
+}
+
+/* Videos */
+ul.videos {
+    margin-top: 1rem;
+    list-style: none;
+}
+
+ul.videos li {
+    display: flex;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+ul.videos li span {
+    opacity: 0.4;
+    min-width: 10rem;
+}
+
+.video {
+    padding-bottom: 3em;
+}
+
+.video > iframe {
+    margin-bottom: 2rem;
+}
+
+.video h1 + p {
+    font-size: 1.5rem;
+}
+
+.video p {
     line-height: 1.5;
     margin-bottom: 1em;
 }

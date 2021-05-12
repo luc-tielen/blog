@@ -3,7 +3,6 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE NamedFieldPuns        #-}
 {-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE TupleSections         #-}
 
 module Main where
 
@@ -66,7 +65,7 @@ data SiteMeta
   , youtubeHandle  :: Maybe String
   } deriving (Generic, Eq, Ord, Show, ToJSON)
 
--- | Data for the index page
+-- | Data for the (posts) index page
 data IndexInfo
   = IndexInfo
   { posts :: [Post]
@@ -88,10 +87,25 @@ data Post
   , author      :: String
   , content     :: String
   , url         :: String
-  , date        :: String
+  , postDate    :: String
   , tags        :: [Tag]
   , image       :: Maybe String
   } deriving (Generic, Eq, Ord, Show, FromJSON, ToJSON, Binary)
+
+-- | Data for a video post
+data Video
+  = Video
+  { title :: String
+  , author :: String
+  , content :: String
+  , url :: String
+  , videoDate :: String
+  , youtubeUrl :: String
+  } deriving (Generic, Eq, Ord, Show, FromJSON, ToJSON, Binary)
+
+-- | Data for the (videos) index page
+newtype VideoIndexInfo = VideoIndexInfo { videos :: [Video] }
+  deriving (Generic, Show, FromJSON, ToJSON)
 
 data AtomData
   = AtomData
@@ -104,19 +118,19 @@ data AtomData
   } deriving (Generic, ToJSON, Eq, Ord, Show)
 
 -- | Given a list of posts this will build a table of contents
-buildIndex :: [Post] -> Set Tag -> Action ()
-buildIndex posts' tags' = do
+buildPostsIndex :: [Post] -> Set Tag -> Action ()
+buildPostsIndex posts' tags' = do
   indexT <- compileTemplate' "site/templates/index.html"
   let indexInfo = IndexInfo {posts = posts', allTags = tags'}
       html = T.unpack $ substitute indexT (withSiteMeta $ toJSON indexInfo)
   writeFile' (outputFolder </> "index.html") html
 
 -- | Build the tagged index pages
-buildTaggedIndex :: Set Tag -> [Post] -> Action ()
-buildTaggedIndex tags =
-  traverse_ (uncurry buildTaggedIndex') . Map.toList . groupPostsByTag tags
+buildTaggedPostsIndex :: Set Tag -> [Post] -> Action ()
+buildTaggedPostsIndex tags =
+  traverse_ (uncurry buildTaggedIndex) . Map.toList . groupPostsByTag tags
   where
-    buildTaggedIndex' tag' posts' = do
+    buildTaggedIndex tag' posts' = do
       indexT <- compileTemplate' "site/templates/posts-with-tag.html"
       let info = IndexWithTagInfo {tag = tag', posts = posts'}
           html = T.unpack $ substitute indexT (withSiteMeta $ toJSON info)
@@ -127,6 +141,14 @@ groupPostsByTag tags' posts' =
   Map.fromList [(t, ps) | t <- Set.toList tags', let ps = filter (matchesTag t) posts']
   where matchesTag t p = t `elem` tags p
 
+-- | Build the video index page
+buildVideosIndex :: [Video] -> Action ()
+buildVideosIndex videos' = do
+  videoIndexT <- compileTemplate' "site/templates/videos.html"
+  let indexInfo = VideoIndexInfo { videos = videos' }
+      html = T.unpack $ substitute videoIndexT $ withSiteMeta $ toJSON indexInfo
+  writeFile' (outputFolder </> "videos" </> "index.html") html
+
 -- | Build the about page
 buildAbout :: Action ()
 buildAbout = do
@@ -136,15 +158,22 @@ buildAbout = do
 
 -- | Find and build all posts
 buildPosts :: Action [Post]
-buildPosts = do
-  pPaths <- getDirectoryFiles "." ["site/posts//*.md"]
-  forP pPaths buildPost
+buildPosts = buildX "posts" buildPost
+
+-- | Find and build all videos
+buildVideos :: Action [Video]
+buildVideos = buildX "videos" buildVideo
+
+buildX :: String -> (FilePath -> Action a) -> Action [a]
+buildX x f = do
+  pPaths <- getDirectoryFiles "." ["site" </> x </> "*.md"]
+  forP pPaths f
 
 -- | Load a post, process metadata, write it to output, then return the post object
 -- Detects changes to either post content or template
 buildPost :: FilePath -> Action Post
 buildPost srcPath = cacheAction ("build" :: T.Text, srcPath) $ do
-  liftIO . putStrLn $ "Rebuilding post: " <> srcPath
+  liftIO . putStrLn $ "Rebuilding blog post: " <> srcPath
   postContent <- readFile' srcPath
   -- load post content and metadata as JSON blob
   postData <- markdownToHTML . T.pack $ postContent
@@ -156,6 +185,22 @@ buildPost srcPath = cacheAction ("build" :: T.Text, srcPath) $ do
   writeFile' (outputFolder </> T.unpack postUrl </> "index.html") . T.unpack $ substitute template fullPostData
   convert fullPostData
 
+buildVideo :: FilePath -> Action Video
+buildVideo srcPath = cacheAction ("build" :: T.Text, srcPath) $ do
+  liftIO . putStrLn $ "Rebuilding video post: " <> srcPath
+  videoPostContent <- readFile' srcPath
+  -- load post content and metadata as JSON blob
+  videoPostData <- markdownToHTML . T.pack $ videoPostContent
+  let videoPostUrl = T.pack $ dropDirectory1 $ dropExtension srcPath
+      withVideoPostUrl = _Object . at "url" ?~ String ("/" <> videoPostUrl)
+  -- Add additional metadata we've been able to compute
+  let fullVideoPostData = withSiteMeta . withVideoPostUrl $ videoPostData
+  template <- compileTemplate' "site/templates/video.html"
+  let renderedTemplate = substitute template fullVideoPostData
+      videoHtmlFile = outputFolder </> T.unpack videoPostUrl </> "index.html"
+  writeFile' videoHtmlFile . T.unpack $ renderedTemplate
+  convert fullVideoPostData
+
 -- | Copy all static files from the listed folders to their destination
 copyStaticFiles :: Action ()
 copyStaticFiles = do
@@ -163,7 +208,16 @@ copyStaticFiles = do
   void $ forP filepaths $ \filepath ->
     copyFileChanged ("site" </> filepath) (outputFolder </> filepath)
 
-sortByDate :: [Post] -> [Post]
+class HasDate a where
+  date :: a -> String
+
+instance HasDate Post where
+  date = postDate
+
+instance HasDate Video where
+  date = videoDate
+
+sortByDate :: HasDate a => [a] -> [a]
 sortByDate = sortOn descendingPostDate where
   descendingPostDate = Down . parseDate . date
 
@@ -195,7 +249,7 @@ buildFeed posts = do
   writeFile' (outputFolder </> "atom.xml") . T.unpack $ substitute atomTempl (toJSON atomData)
   where
     mkAtomPost :: Post -> Post
-    mkAtomPost p = p { date = formatDate $ date p }
+    mkAtomPost p = p { postDate = formatDate $ postDate p }
 
 extractUniqueTags :: [Post] -> Set Tag
 extractUniqueTags posts' = Set.fromList [t | p <- posts', t <- tags p]
@@ -205,10 +259,12 @@ extractUniqueTags posts' = Set.fromList [t | p <- posts', t <- tags p]
 buildRules :: Action ()
 buildRules = do
   allPosts <- sortByDate <$> buildPosts
+  allVideos <- sortByDate <$> buildVideos
   let allTags = extractUniqueTags allPosts
-  buildIndex allPosts allTags
-  buildTaggedIndex allTags allPosts
-  buildFeed allPosts
+  buildPostsIndex allPosts allTags
+  buildTaggedPostsIndex allTags allPosts
+  buildVideosIndex allVideos
+  buildFeed allPosts  -- TODO add videos?
   buildAbout
   copyStaticFiles
 
