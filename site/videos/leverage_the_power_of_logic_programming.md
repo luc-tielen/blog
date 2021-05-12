@@ -1,7 +1,7 @@
 ---
 title: Leverage the power of logic programming
 author: Luc Tielen
-videoDate: May 10, 2021
+videoDate: Jan 12, 2021
 youtubeUrl: EB5nORuBMoY
 ---
 
