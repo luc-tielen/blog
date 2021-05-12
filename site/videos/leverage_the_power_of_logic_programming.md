@@ -1,5 +1,5 @@
 ---
-title: Leverage the power of logic programming
+title: "Talk: Leverage the power of logic programming"
 author: Luc Tielen
 videoDate: Jan 12, 2021
 youtubeUrl: EB5nORuBMoY
