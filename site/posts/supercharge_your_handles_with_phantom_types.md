@@ -1,7 +1,7 @@
 ---
 title: Supercharge your handles using phantom types
 author: Luc Tielen
-date: Mar 13, 2021
+postDate: Mar 13, 2021
 tags:
   - haskell
 ---
