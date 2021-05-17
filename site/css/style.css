@@ -177,6 +177,12 @@ ul.posts li {
     margin-left: 0;
 }
 
+@media screen and (max-width: 1000px) {
+    ul.posts li {
+        flex-direction: column;
+    }
+}
+
 ul.posts li span {
     opacity: 0.4;
     min-width: 10rem;
@@ -210,6 +216,12 @@ ul.videos li {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
     margin-left: 0;
+}
+
+@media screen and (max-width: 1000px) {
+    ul.videos li {
+        flex-direction: column;
+    }
 }
 
 ul.videos li span {
