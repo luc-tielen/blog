@@ -5,21 +5,28 @@
     <meta name="description" content="FP -&gt; Compilers -&gt; Logic -&gt; Blog">
     <meta name="author" content="Luc Tielen">
     <meta name=viewport content="width=device-width, initial-scale=1">
-    <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="Dead code elimination using souffle-haskell">
+    <meta name="twitter:description" content="">
+        <title>Dead code elimination using souffle-haskell</title>
     <link rel="icon" type="image/png" href="/images/favicon.png">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
     <script type="text/javascript" src="/js/main.js"></script>
   </head>
-  <body>
-    <header>
-      <nav>
-        <a href="/">Blog</a>
-        <a href="/videos">Videos</a>
-        <a href="/about">About</a>
-        <div class="social">
-          <a href="https://ko-fi.com/luctielen">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/videos">Videos</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://ko-fi.com/luctielen">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 7.324-.022 11.822c.164 2.424 2.586 2.672 2.586 2.672s8.267-.023 11.966-.049c2.438-.426 2.683-2.566 2.658-3.734c4.352.24 7.422-2.831 6.649-6.916zm-11.062 3.511c-1.246 1.453-4.011 3.976-4.011 3.976s-.121.119-.31.023c-.076-.057-.108-.09-.108-.09c-.443-.441-3.368-3.049-4.034-3.954c-.709-.965-1.041-2.7-.091-3.71c.951-1.01 3.005-1.086 4.363.407c0 0 1.565-1.782 3.468-.963c1.904.82 1.832 3.011.723 4.311zm6.173.478c-.928.116-1.682.028-1.682.028V7.284h1.77s1.971.551 1.971 2.638c0 1.913-.985 2.667-2.059 3.015z"/></svg>
       </a>
       <a href="https://twitter.com/luctielen">
@@ -35,21 +42,28 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
         </a>
       <a href="/atom.xml">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"/></svg>
-          </a>
-        </div>
-      </nav>
-    </header>
-    <main>
-      <h1 class="posts-title">Posts tagged "c++"</h1>
-      <ul class="posts">
-          <li>
-      <span>Jan 12, 2021</span>
-      <a href="/posts/calling_cpp_from_haskell">Calling C++ from Haskell</a>
-    </li>
-</ul>
-      <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
-           style="display:none;" width="1" height="1"/>
-    </main>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"/></svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="video">
+    <h1>Dead code elimination using souffle-haskell</h1>
+    <!--
+    <span class="date"></span>
+    -->
+    <iframe width="1156"
+            height="650"
+            src="https://www.youtube.com/embed/videoseries?list=PL0aeNUfC2dmnUiKmx_q55BSjvaFOrC4Xw"
+            title="Dead code elimination using souffle-haskell"
+            frameborder="0"
+            allow="autoplay; clipboard-write; encrypted-media; gyroscope; accelerometer; picture-in-picture"
+            allowfullscreen>
+    </iframe>
+
+    <p>In this video series, I build a data-flow based "dead code elimination" algorithm for a small language using a combination of Haskell and Souffle Datalog.</p>
+<p>The final code can be found in <a href="https://github.com/luc-tielen/playground/blob/dead_code_elimination/src/Main.hs">this repository</a>.</p>
+    <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
+         style="display:none;" width="1" height="1"/>
+  </main>
 </body>
-</html>

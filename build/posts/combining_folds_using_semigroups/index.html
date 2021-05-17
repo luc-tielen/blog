@@ -24,6 +24,7 @@
   <header>
     <nav>
       <a href="/">Blog</a>
+      <a href="/videos">Videos</a>
       <a href="/about">About</a>
       <div class="social">
         <a href="https://ko-fi.com/luctielen">
@@ -50,7 +51,7 @@
   <main class="post">
     <h1>Combining folds using semigroups</h1>
     <!--
-    <span class="date">Mar 27, 2021</span>
+    <span class="date"></span>
     -->
     <div class="tags">
       <span class="tag tag-haskell"><a href="/tag/haskell">haskell</a></span>
@@ -120,10 +121,10 @@
 <span id="cb3-2"><a href="#cb3-2"></a>cata f <span class="op">.</span> cata g <span class="ot">=</span> cata (f <span class="ot">`comp`</span> g) <span class="kw">where</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a>  <span class="co">-- &#39;comp&#39; first applies the function &#39;y&#39;, unwraps a single layer of</span></span>
 <span id="cb3-4"><a href="#cb3-4"></a>  <span class="co">-- the Fix datastructure, and then finally applies the function &#39;x&#39;</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="ot">  comp ::</span> (f (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> a)</span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="ot">  comp ::</span> (f (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> <span class="dt">Fix</span> f)</span>
 <span id="cb3-6"><a href="#cb3-6"></a>       <span class="ot">-&gt;</span> (g (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> <span class="dt">Fix</span> f)</span>
 <span id="cb3-7"><a href="#cb3-7"></a>       <span class="ot">-&gt;</span> g (<span class="dt">Fix</span> f)</span>
-<span id="cb3-8"><a href="#cb3-8"></a>       <span class="ot">-&gt;</span> a</span>
+<span id="cb3-8"><a href="#cb3-8"></a>       <span class="ot">-&gt;</span> <span class="dt">Fix</span> f</span>
 <span id="cb3-9"><a href="#cb3-9"></a>  comp x y <span class="ot">=</span> x <span class="op">.</span> unfix <span class="op">.</span> y</span></code></pre></div>
 <p>However, this approach is not applicable for our static analysis running example due to the types not lining up. The result of the first function (<code>g</code> / <code>y</code>) needs to return a datastructure wrapped in <code>Fix</code> (but we return a <code>IO ()</code> value).</p>
 <p>The second approach Tim mentions (using the <a href="https://hackage.haskell.org/package/base-4.14.1.0/docs/Control-Arrow.html#v:-38--38--38-"><code>(&amp;&amp;&amp;)</code></a>-operator from <code>Control.Arrow</code>) <em>is</em> applicable:</p>

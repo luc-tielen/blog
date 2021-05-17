@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2021-03-27T14:39:SZ</updated>
+  <updated>2021-05-17T09:45:SZ</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -12,7 +12,7 @@
       <title>Combining folds using semigroups</title>
       <link href="https://luctielen.com/posts/combining_folds_using_semigroups"/>
       <id>https://luctielen.com/posts/combining_folds_using_semigroups</id>
-      <updated>2021-03-27T00:00:SZ</updated>
+      <updated></updated>
       <category term="haskell"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>In today's post, I will show how to combine many recursion-scheme folds using semigroups. For seasoned Haskellers using the library, this trick might be well known or obvious, but I decided to write it down anyway for the rest of us mere mortals <span class="emoji" data-emoji="smiley">😃</span>. I will assume a little familiarity with recursion-schemes though. If this isn't the case, be sure to check out the (recently revised) <a href="https://github.com/recursion-schemes/recursion-schemes/">recursion-schemes README</a> for an introduction to the library.</p>
@@ -79,10 +79,10 @@
 <span id="cb3-2"><a href="#cb3-2"></a>cata f <span class="op">.</span> cata g <span class="ot">=</span> cata (f <span class="ot">`comp`</span> g) <span class="kw">where</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a>  <span class="co">-- &#39;comp&#39; first applies the function &#39;y&#39;, unwraps a single layer of</span></span>
 <span id="cb3-4"><a href="#cb3-4"></a>  <span class="co">-- the Fix datastructure, and then finally applies the function &#39;x&#39;</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a><span class="ot">  comp ::</span> (f (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> a)</span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="ot">  comp ::</span> (f (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> <span class="dt">Fix</span> f)</span>
 <span id="cb3-6"><a href="#cb3-6"></a>       <span class="ot">-&gt;</span> (g (<span class="dt">Fix</span> f) <span class="ot">-&gt;</span> <span class="dt">Fix</span> f)</span>
 <span id="cb3-7"><a href="#cb3-7"></a>       <span class="ot">-&gt;</span> g (<span class="dt">Fix</span> f)</span>
-<span id="cb3-8"><a href="#cb3-8"></a>       <span class="ot">-&gt;</span> a</span>
+<span id="cb3-8"><a href="#cb3-8"></a>       <span class="ot">-&gt;</span> <span class="dt">Fix</span> f</span>
 <span id="cb3-9"><a href="#cb3-9"></a>  comp x y <span class="ot">=</span> x <span class="op">.</span> unfix <span class="op">.</span> y</span></code></pre></div>
 <p>However, this approach is not applicable for our static analysis running example due to the types not lining up. The result of the first function (<code>g</code> / <code>y</code>) needs to return a datastructure wrapped in <code>Fix</code> (but we return a <code>IO ()</code> value).</p>
 <p>The second approach Tim mentions (using the <a href="https://hackage.haskell.org/package/base-4.14.1.0/docs/Control-Arrow.html#v:-38--38--38-"><code>(&amp;&amp;&amp;)</code></a>-operator from <code>Control.Arrow</code>) <em>is</em> applicable:</p>
@@ -167,7 +167,7 @@
       <title>Supercharge your handles using phantom types</title>
       <link href="https://luctielen.com/posts/supercharge_your_handles_with_phantom_types"/>
       <id>https://luctielen.com/posts/supercharge_your_handles_with_phantom_types</id>
-      <updated>2021-03-13T00:00:SZ</updated>
+      <updated></updated>
       <category term="haskell"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>In this article, I show how to use phantom types in combination with the "Handle pattern" to create more type-safe and user-friendly APIs in Haskell. I do this based on my experience adding this idea to the <a href="https://github.com/luc-tielen/souffle-haskell">souffle-haskell</a> library.</p>
@@ -305,7 +305,7 @@
       <title>Calling C++ from Haskell</title>
       <link href="https://luctielen.com/posts/calling_cpp_from_haskell"/>
       <id>https://luctielen.com/posts/calling_cpp_from_haskell</id>
-      <updated>2021-01-12T00:00:SZ</updated>
+      <updated></updated>
       <category term="haskell"/>
       <category term="c++"/>
       <summary></summary>
@@ -613,8 +613,9 @@
       <title>How to set up your blog with Haskell, Slick and Netlify</title>
       <link href="https://luctielen.com/posts/how_to_setup_blog_with_haskell_slick_and_netlify"/>
       <id>https://luctielen.com/posts/how_to_setup_blog_with_haskell_slick_and_netlify</id>
-      <updated>2020-12-21T00:00:SZ</updated>
-      <category term="blog"/>
+      <updated></updated>
+      <category term="haskell"/>
+      <category term="meta"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>I wanted to setup a blog powered by Haskell and HTML/CSS and host it on Netlify. Creating a static site is easy enough using <em>Slick</em>, but this has no direct support for Netlify. In this first post I will show you how to fix that.</p>
 <h2 id="tech-stack">Tech stack</h2>
