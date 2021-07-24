@@ -200,6 +200,10 @@ ul.posts li span {
     font-size: 1.5rem;
 }
 
+ol + p, ul + p {
+    margin-top: 1em;
+}
+
 .post p {
     line-height: 1.5;
     margin-bottom: 1em;
