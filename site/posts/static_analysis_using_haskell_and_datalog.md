@@ -298,3 +298,7 @@ dead code paths in a program. And if you really want to go all-in, you could
 structure your different analyses to gather all facts in a single traversal by
 [combining them into one fold](./combining_folds_using_semigroups).
 
+If you have any questions or thoughts about this article, let me know on
+[Twitter](https://twitter.com/luctielen/status/1418954922209460236).
+If you want to play around with the code from this post, it can be found
+[here](https://github.com/luc-tielen/playground/blob/static_analysis_blogpost/src/Main.hs).
