@@ -296,7 +296,7 @@ analysis. This example is more complicated than the one explained in this
 post and uses techniques like control flow analysis (in Datalog) to compute all
 dead code paths in a program. And if you really want to go all-in, you could
 structure your different analyses to gather all facts in a single traversal by
-[combining them into one fold](./combining_folds_using_semigroups).
+[combining them into one fold](/posts/combining_folds_using_semigroups).
 
 If you have any questions or thoughts about this article, let me know on
 [Twitter](https://twitter.com/luctielen/status/1418954922209460236).
