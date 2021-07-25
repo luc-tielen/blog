@@ -132,8 +132,8 @@ straight-forward.
 
 When creating your Datalog queries, you can either check for "positive" or
 "negative" scenarios. With positive scenarios, I mean Datalog queries that
-search which values match certain criteria (like in this example). Negative
-scenarios on the other hand check if an error situation occurred.
+search which values match certain criteria. Negative scenarios on the other hand
+check if an error situation occurred (like in this example).
 
 One final thing to note here is that in a more complete implementation the query
 would contain extra information (for example line numbers). This has some
