@@ -5,6 +5,7 @@ postDate: Sep 30, 2021
 tags:
   - llvm
   - haskell
+image: llvm_gep_explained.png
 ---
 
 In today's article, I will showcase how Haskell's typesystem can be used to
