@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="FP -&gt; Compilers -&gt; Logic -&gt; Blog">
+    <meta name="author" content="Luc Tielen">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="Making LLVM GEP safer in Haskell">
+    <meta name="twitter:description" content="">
+        <title>Making LLVM GEP safer in Haskell</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+  </head>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/videos">Videos</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://twitter.com/luctielen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M16 3.538a6.461 6.461 0 01-1.884.516 3.301 3.301 0 001.444-1.816 6.607 6.607 0 01-2.084.797 3.28 3.28 0 00-2.397-1.034 3.28 3.28 0 00-3.197 4.028 9.321 9.321 0 01-6.766-3.431 3.284 3.284 0 001.015 4.381A3.301 3.301 0 01.643 6.57v.041A3.283 3.283 0 003.277 9.83a3.291 3.291 0 01-1.485.057 3.293 3.293 0 003.066 2.281 6.586 6.586 0 01-4.862 1.359 9.286 9.286 0 005.034 1.475c6.037 0 9.341-5.003 9.341-9.341 0-.144-.003-.284-.009-.425a6.59 6.59 0 001.637-1.697z"/></svg>
+      </a>
+      <a href="https://github.com/luc-tielen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M8 .198a8 8 0 00-2.529 15.591c.4.074.547-.174.547-.385 0-.191-.008-.821-.011-1.489-2.226.484-2.695-.944-2.695-.944-.364-.925-.888-1.171-.888-1.171-.726-.497.055-.486.055-.486.803.056 1.226.824 1.226.824.714 1.223 1.872.869 2.328.665.072-.517.279-.87.508-1.07-1.777-.202-3.645-.888-3.645-3.954 0-.873.313-1.587.824-2.147-.083-.202-.357-1.015.077-2.117 0 0 .672-.215 2.201.82A7.672 7.672 0 018 4.066c.68.003 1.365.092 2.004.269 1.527-1.035 2.198-.82 2.198-.82.435 1.102.162 1.916.079 2.117.513.56.823 1.274.823 2.147 0 3.073-1.872 3.749-3.653 3.947.287.248.543.735.543 1.481 0 1.07-.009 1.932-.009 2.195 0 .213.144.462.55.384A8 8 0 008.001.196z"/></svg>
+      </a>
+      <a href="https://twitch.tv/luctielen">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2.149 0l-1.612 4.119v16.836h5.731v3.045h3.224l3.045-3.045h4.657l6.269-6.269v-14.686h-21.314zm19.164 13.612l-3.582 3.582h-5.731l-3.045 3.045v-3.045h-4.836v-15.045h17.194v11.463zm-3.582-7.343v6.262h-2.149v-6.262h2.149zm-5.731 0v6.262h-2.149v-6.262h2.149z"/></svg>
+      </a>
+      <a href="https://www.youtube.com/channel/UCeMz1NwTQlkhQvIFYMZoAJQ">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+        </a>
+      <a href="/atom.xml">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"/></svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="post">
+    <h1>Making LLVM GEP safer in Haskell</h1>
+    <!--
+    <span class="date"></span>
+    -->
+    <div class="tags">
+      <span class="tag tag-llvm"><a href="/tag/llvm">llvm</a></span>
+      <span class="tag tag-haskell"><a href="/tag/haskell">haskell</a></span>
+    </div>
+    <p>In today's article, I will showcase how Haskell's typesystem can be used to considerably simplify code generation involving the LLVM <code>getelementptr</code> instruction.</p>
+<h2 id="intro-to-the-gep-instruction">Intro to the GEP instruction</h2>
+<p>LLVM as a compiler framework offers many different low-level instructions, one of which being the <a href="https://llvm.org/docs/LangRef.html#getelementptr-instruction"><code>getelementptr</code></a> instruction (commonly abbreviated as just "<code>gep</code>"). With <code>gep</code>, you can compute derived pointers/addresses of a nested type inside another data structure, starting from a pointer. It does this by making use of type information and a list of indices into the struct that are supplied.</p>
+<p>Here's a small snippet of C++ code and the corresponding instructions that the compiler generates (some details omitted for clarity):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">struct</span> A {</span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="dt">int</span> field1;</span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="dt">double</span> field2;</span>
+<span id="cb1-4"><a href="#cb1-4"></a>};</span>
+<span id="cb1-5"><a href="#cb1-5"></a></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">struct</span> B {</span>
+<span id="cb1-7"><a href="#cb1-7"></a>  A fieldA;</span>
+<span id="cb1-8"><a href="#cb1-8"></a>  <span class="dt">int</span> values[<span class="dv">3</span>];</span>
+<span id="cb1-9"><a href="#cb1-9"></a>};</span>
+<span id="cb1-10"><a href="#cb1-10"></a></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="dt">void</span> func(B* b) {</span>
+<span id="cb1-12"><a href="#cb1-12"></a>  b-&gt;fieldA.field2 = <span class="fl">123.456</span>;</span>
+<span id="cb1-13"><a href="#cb1-13"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode ll"><code class="sourceCode llvm"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">; First some type definitions:</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">%struct.B</span> = <span class="kw">type</span> { <span class="fu">%struct.A</span>, [<span class="dv">3</span> x <span class="dt">i32</span>] }</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="fu">%struct.A</span> = <span class="kw">type</span> { <span class="dt">i32</span>, <span class="dt">double</span> }</span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="co">; Instructions for function &quot;func&quot;:</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">define</span> dso_local <span class="dt">void</span> <span class="fu">@_Z4funcP1B</span>(<span class="fu">%struct.B</span>* <span class="fu">%0</span>) {</span>
+<span id="cb2-7"><a href="#cb2-7"></a>  <span class="co">; Address to field2 is calculated:</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>  <span class="fu">%1</span> = <span class="kw">getelementptr</span> <span class="fu">%struct.B</span>, <span class="fu">%struct.B</span>* <span class="fu">%0</span>, <span class="dt">i32</span> <span class="dv">0</span>, <span class="dt">i32</span> <span class="dv">0</span>, <span class="dt">i32</span> <span class="dv">1</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>  <span class="co">; And 123.456 is written to it:</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>  <span class="kw">store</span> <span class="dt">double</span> <span class="dv">1</span>.234560e+<span class="dv">02</span>, <span class="dt">double</span>* <span class="fu">%1</span>, <span class="kw">align</span> <span class="dv">8</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a>  <span class="kw">ret</span> <span class="dt">void</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>}</span></code></pre></div>
+<p>If we take a closer look at the line with the gep instruction, we see that a list of indices is used to index into the B datastructure. The indices correspond with the following:</p>
+<ol>
+<li><strong>0</strong>: offset from the initial pointer to object of type B</li>
+<li><strong>0</strong>: first field inside the B struct (= struct A)</li>
+<li><strong>1</strong>: second field inside the A struct (= double)</li>
+</ol>
+<p>If we want to generate similar code using llvm-hs in Haskell, we need to write the following code:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="ot">codegen ::</span> <span class="dt">ModuleBuilder</span> ()</span>
+<span id="cb3-2"><a href="#cb3-2"></a>codegen <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>  aType <span class="ot">&lt;-</span> typedef <span class="st">&quot;A&quot;</span> (<span class="dt">Just</span> <span class="op">$</span> <span class="dt">StructureType</span> <span class="dt">False</span> [i32, double])</span>
+<span id="cb3-4"><a href="#cb3-4"></a>  bType <span class="ot">&lt;-</span> typedef <span class="st">&quot;B&quot;</span> (<span class="dt">Just</span> <span class="op">$</span> <span class="dt">StructureType</span> <span class="dt">False</span> [aType, <span class="dt">ArrayType</span> <span class="dv">3</span> i32])</span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a>  function <span class="st">&quot;func&quot;</span> [(ptr bType, <span class="st">&quot;b&quot;</span>)] void <span class="op">$</span> \[b] <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>    pointer <span class="ot">&lt;-</span> gep b [int32 <span class="dv">0</span>, int32 <span class="dv">0</span>, int32 <span class="dv">1</span>]</span>
+<span id="cb3-8"><a href="#cb3-8"></a>    store pointer <span class="dv">0</span> <span class="fl">123.456</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a>    retVoid</span>
+<span id="cb3-10"><a href="#cb3-10"></a></span>
+<span id="cb3-11"><a href="#cb3-11"></a>  <span class="fu">return</span> ()</span>
+<span id="cb3-12"><a href="#cb3-12"></a></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb3-14"><a href="#cb3-14"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>  <span class="kw">let</span> moduleIR <span class="ot">=</span> buildModule <span class="st">&quot;example&quot;</span> codegen</span>
+<span id="cb3-16"><a href="#cb3-16"></a>      output <span class="ot">=</span> ppllvm moduleIR</span>
+<span id="cb3-17"><a href="#cb3-17"></a>  T.putStrLn output</span></code></pre></div>
+<p>The translation is straight-forward, but the gep instruction has some problems:</p>
+<ol>
+<li>Types are indexed by integers: hard to remember</li>
+<li>Manual entry of indices: error-prone</li>
+<li>Indices need to be repeated each time you use a gep: tedious</li>
+<li>It is possible to provide an empty list of indices which is invalid</li>
+</ol>
+<p>The good thing is that we have some options to fix these issues. Because we are using the Haskell bindings for LLVM, we can use Haskell as a "meta-programming" language for LLVM. Let's see what we can do.</p>
+<h2 id="the-indices-datatype">The Indices datatype</h2>
+<p>First of, we can start by making a dedicated Indices datatype, that handles the complexity of the gep instruction. For this to be possible, we need to take a few rules into account regarding the GEP instruction:</p>
+<ol>
+<li>A gep with just index 0 is a no-op (will return address of current pointer).</li>
+<li>Multiple gep instructions can be combined if the result of the first gep is used in the second instruction.</li>
+<li>If geps are combined: if the first index is 0, it can be skipped (because of the first rule).</li>
+</ol>
+<p>Written in pseudo-code, this looks as follows:</p>
+<ul>
+<li>[0] = no-op</li>
+<li>[0, 1] + [0, 2, 3] = [0, 1, 2, 3]</li>
+<li>[0, 1] + [1, 2, 3] = [0, 1, 1, 2, 3]</li>
+</ul>
+<p>Given these rules, we can create the following datatype that takes all this into account:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">newtype</span> <span class="dt">Indices</span> <span class="ot">=</span> <span class="dt">Indices</span> (<span class="dt">NonEmpty</span> <span class="dt">Operand</span>)</span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">instance</span> <span class="dt">Semigroup</span> <span class="dt">Indices</span> <span class="kw">where</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>  <span class="dt">Indices</span> lhs <span class="op">&lt;&gt;</span> <span class="dt">Indices</span> rhs <span class="ot">=</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>    <span class="kw">let</span> rhs&#39; <span class="ot">=</span> <span class="kw">if</span> NE.head rhs <span class="op">==</span> int32 <span class="dv">0</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>               <span class="kw">then</span> NE.tail rhs</span>
+<span id="cb4-7"><a href="#cb4-7"></a>               <span class="kw">else</span> NE.toList rhs</span>
+<span id="cb4-8"><a href="#cb4-8"></a>    <span class="kw">in</span> <span class="dt">Indices</span> <span class="op">$</span> NE.head lhs <span class="op">:|</span> (NE.tail lhs <span class="op">++</span> rhs&#39;)</span></code></pre></div>
+<p>This newtype and Semigroup instance gets us quite far and allows us to compose indices together. However, there's nothing stopping us from composing indices together in the wrong order or in other incorrect ways, which can lead to an invalid list of indices. This can in turn lead to potentially weird bugs (that can only be observed at runtime) because of wrong pointer offsets.</p>
+<h2 id="keeping-track-of-indices-at-the-type-level">Keeping track of indices at the type level</h2>
+<p>Luckily, we can make use of Haskell's typesystem to prevent exactly these sources of bugs! If we think of the indices as a path used to index a data structure, we can make it so paths can only be composed if the end of the first path lines up with the start of the second path. We can keep track of this fact by using two phantom type variables representing the start and end of a path. This gives us the following data type:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">newtype</span> <span class="dt">Path</span> (<span class="ot">start ::</span> k) (<span class="ot">end ::</span> k) <span class="ot">=</span> <span class="dt">Path</span> (<span class="dt">NonEmpty</span> <span class="dt">Operand</span>)</span>
+<span id="cb5-2"><a href="#cb5-2"></a></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">type</span> role <span class="dt">Path</span> nominal nominal</span></code></pre></div>
+<p>The phantom type variables give us additional type safety, but they have changed the kind (to <code>k -&gt; k -&gt; Type</code>). This makes it incompatible with the <code>Semigroup</code> typeclass. This isn't too bad though, since this new datatype forms a <code>Category</code> instead:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">instance</span> <span class="dt">Category</span> <span class="dt">Path</span> <span class="kw">where</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>  <span class="co">-- Just indexing by 0 as first element, gives us back</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>  <span class="co">-- the original pointer address (first rule)</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="fu">id</span> <span class="ot">=</span> <span class="dt">Path</span> (int32 <span class="dv">0</span> <span class="op">:|</span> [])</span>
+<span id="cb6-5"><a href="#cb6-5"></a></span>
+<span id="cb6-6"><a href="#cb6-6"></a>  <span class="co">-- NOTE: composition is now &quot;swapped&quot; compared to the</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>  <span class="co">-- earlier defined Semigroup instance, to fit the (.) operator</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a>  <span class="dt">Path</span> b2c <span class="op">.</span> <span class="dt">Path</span> a2b <span class="ot">=</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>    <span class="kw">let</span> b2c&#39; <span class="ot">=</span> <span class="kw">if</span> NE.head b2c <span class="op">==</span> int32 <span class="dv">0</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>               <span class="kw">then</span> NE.tail b2c</span>
+<span id="cb6-11"><a href="#cb6-11"></a>               <span class="kw">else</span> NE.toList b2c</span>
+<span id="cb6-12"><a href="#cb6-12"></a>    <span class="kw">in</span> <span class="dt">Path</span> <span class="op">$</span> NE.head a2b <span class="op">:|</span> (NE.tail a2b <span class="op">++</span> b2c&#39;)</span></code></pre></div>
+<p>With this <code>Path</code> datatype, we can now create a type-safe drop-in replacement for the <code>gep</code> instruction:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="ot">addr ::</span> <span class="dt">Path</span> a b <span class="ot">-&gt;</span> <span class="dt">Operand</span> <span class="ot">-&gt;</span> <span class="dt">IRBuilderT</span> <span class="dt">ModuleBuilder</span> <span class="dt">Operand</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>addr path pointer <span class="ot">=</span> gep pointer (pathToIndices path)</span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="kw">where</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="ot">    pathToIndices ::</span> <span class="dt">Path</span> a b <span class="ot">-&gt;</span> [<span class="dt">Operand</span>]</span>
+<span id="cb7-5"><a href="#cb7-5"></a>    pathToIndices (<span class="dt">Path</span> a2b) <span class="ot">=</span> NE.toList a2b</span></code></pre></div>
+<p>Because <code>gep</code> is often used in combination with <code>load</code> and <code>store</code> instructions, we can write helper functions for these too:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a><span class="co">-- This works very similar to C: index into a structure, and then get (load)</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="co">-- the value at that address.</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="ot">deref ::</span> <span class="dt">Path</span> a b <span class="ot">-&gt;</span> <span class="dt">Operand</span> <span class="ot">-&gt;</span> <span class="dt">IRBuilderT</span> <span class="dt">ModuleBuilder</span> <span class="dt">Operand</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a>deref path pointer <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>  address <span class="ot">&lt;-</span> addr path pointer</span>
+<span id="cb8-6"><a href="#cb8-6"></a>  load address <span class="dv">0</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a></span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="co">-- Same comment applies here, but with storing a value at a specific address.</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="ot">assign ::</span> <span class="dt">Path</span> a b <span class="ot">-&gt;</span> <span class="dt">Operand</span> <span class="ot">-&gt;</span> <span class="dt">Operand</span> <span class="ot">-&gt;</span> <span class="dt">IRBuilderT</span> <span class="dt">ModuleBuilder</span> ()</span>
+<span id="cb8-10"><a href="#cb8-10"></a>assign path pointer value <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a>  dstAddr <span class="ot">&lt;-</span> addr path pointer</span>
+<span id="cb8-12"><a href="#cb8-12"></a>  store dstAddr <span class="dv">0</span> value</span></code></pre></div>
+<p>You can now even create a helper function to copy over specific parts of a datatype:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="co">-- This copies a (sub-)datatype of src into dst (at the same index offset).</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="ot">copyPath ::</span> <span class="dt">Path</span> a b <span class="ot">-&gt;</span> <span class="dt">Operand</span> <span class="ot">-&gt;</span> <span class="dt">Operand</span> <span class="ot">-&gt;</span> <span class="dt">IRCodegen</span> r ()</span>
+<span id="cb9-3"><a href="#cb9-3"></a>copyPath path src dst <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>  value <span class="ot">&lt;-</span> deref path src</span>
+<span id="cb9-5"><a href="#cb9-5"></a>  assign path dst value</span></code></pre></div>
+<p>Now that we're armed with all these helper functions, the only thing that is left is to create paths to index into our data structure and compose them together. Note that this is the only place now where you need to be careful constructing the path. Afterwards, the typesystem and Category instance makes sure all derived paths are correct by construction.</p>
+<p>We can now port the earlier mentioned C++ program to LLVM as follows:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">data</span> <span class="dt">Datatype</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>  <span class="ot">=</span> <span class="dt">A</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>  <span class="op">|</span> <span class="dt">B</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>  <span class="op">|</span> <span class="dt">Field1</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a>  <span class="op">|</span> <span class="dt">Field2</span></span>
+<span id="cb10-6"><a href="#cb10-6"></a>  <span class="op">|</span> <span class="dt">Value</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>  <span class="op">|</span> <span class="dt">ArrayOf</span> <span class="dt">Datatype</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a></span>
+<span id="cb10-9"><a href="#cb10-9"></a><span class="co">-- Note: Not all of these Paths are needed, but are added as examples</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a></span>
+<span id="cb10-11"><a href="#cb10-11"></a><span class="ot">aOf ::</span> <span class="dt">Path</span> <span class="dt">&#39;B</span> <span class="dt">&#39;A</span></span>
+<span id="cb10-12"><a href="#cb10-12"></a>aOf <span class="ot">=</span> <span class="dt">Path</span> [int32 <span class="dv">0</span>, int32 <span class="dv">0</span>]</span>
+<span id="cb10-13"><a href="#cb10-13"></a></span>
+<span id="cb10-14"><a href="#cb10-14"></a><span class="ot">valuesOf ::</span> <span class="dt">Path</span> <span class="dt">&#39;B</span> (<span class="dt">&#39;ArrayOf</span> <span class="dt">&#39;Value</span>)</span>
+<span id="cb10-15"><a href="#cb10-15"></a>valuesOf <span class="ot">=</span> <span class="dt">Path</span> [int32 <span class="dv">0</span>, int32 <span class="dv">1</span>]</span>
+<span id="cb10-16"><a href="#cb10-16"></a></span>
+<span id="cb10-17"><a href="#cb10-17"></a><span class="ot">valueAt ::</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">Path</span> <span class="dt">&#39;B</span> <span class="dt">&#39;Value</span></span>
+<span id="cb10-18"><a href="#cb10-18"></a>valueAt i <span class="ot">=</span> <span class="dt">Path</span> [int32 <span class="dv">0</span>, int32 <span class="dv">1</span>, int32 i]</span>
+<span id="cb10-19"><a href="#cb10-19"></a></span>
+<span id="cb10-20"><a href="#cb10-20"></a><span class="ot">field1Of ::</span> <span class="dt">Path</span> <span class="dt">&#39;A</span> <span class="dt">&#39;Field1</span></span>
+<span id="cb10-21"><a href="#cb10-21"></a>field1Of <span class="ot">=</span> <span class="dt">Path</span> [int32 <span class="dv">0</span>, int32 <span class="dv">0</span>]</span>
+<span id="cb10-22"><a href="#cb10-22"></a></span>
+<span id="cb10-23"><a href="#cb10-23"></a><span class="ot">field2Of ::</span> <span class="dt">Path</span> <span class="dt">&#39;A</span> <span class="dt">&#39;Field2</span></span>
+<span id="cb10-24"><a href="#cb10-24"></a>field2Of <span class="ot">=</span> <span class="dt">Path</span> [int32 <span class="dv">0</span>, int32 <span class="dv">1</span>]</span>
+<span id="cb10-25"><a href="#cb10-25"></a></span>
+<span id="cb10-26"><a href="#cb10-26"></a>codegen <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb10-27"><a href="#cb10-27"></a>  aType <span class="ot">&lt;-</span> typedef <span class="st">&quot;A&quot;</span> (<span class="dt">Just</span> <span class="op">$</span> <span class="dt">StructureType</span> <span class="dt">False</span> [i32, double])</span>
+<span id="cb10-28"><a href="#cb10-28"></a>  bType <span class="ot">&lt;-</span> typedef <span class="st">&quot;B&quot;</span> (<span class="dt">Just</span> <span class="op">$</span> <span class="dt">StructureType</span> <span class="dt">False</span> [aType, <span class="dt">ArrayType</span> <span class="dv">3</span> i32])</span>
+<span id="cb10-29"><a href="#cb10-29"></a></span>
+<span id="cb10-30"><a href="#cb10-30"></a>  function <span class="st">&quot;func&quot;</span> [(ptr bType, <span class="st">&quot;b&quot;</span>)] void <span class="op">$</span> \[b] <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb10-31"><a href="#cb10-31"></a>    assign (field2Of <span class="op">.</span> aOf) bPtr (double <span class="fl">123.456</span>)</span>
+<span id="cb10-32"><a href="#cb10-32"></a>    retVoid</span>
+<span id="cb10-33"><a href="#cb10-33"></a></span>
+<span id="cb10-34"><a href="#cb10-34"></a>  <span class="fu">return</span> ()</span>
+<span id="cb10-35"><a href="#cb10-35"></a></span>
+<span id="cb10-36"><a href="#cb10-36"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb10-37"><a href="#cb10-37"></a>main <span class="ot">=</span> _ <span class="co">-- same as before</span></span></code></pre></div>
+<p>And we can verify it still generates the correct LLVM code:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode ll"><code class="sourceCode llvm"><span id="cb11-1"><a href="#cb11-1"></a>TODO</span></code></pre></div>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this post I showed how we can make the LLVM <code>gep</code> instruction safer and easier to use in Haskell by making clever use of the typesystem. If you want to see this idea being used in action, you can take a look at <a href="https://github.com/luc-tielen/eclair-lang/commit/db130e2fc3f24b556e262f92f33178e679c60410">this commit</a> where I managed to remove all raw <code>gep</code> instructions by making use of the <code>Path</code> abstraction. The code is slightly different to what is presented in this blogpost, but the idea is the same.</p>
+<p>If you are interested in more content like this, follow me on <a href="https://twitter.com/luctielen">Twitter</a>. Feel free to contact me if you have any questions or comments about this topic.</p>
+<p>TODO</p>
+<ul>
+<li>posten op /r/haskell, /r/llvm (?)</li>
+<li>nalezen! (vooral code!)</li>
+<li>imports vermelden (NE = Data.List.NonEmpty)</li>
+</ul>
+    <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
+         style="display:none;" width="1" height="1"/>
+  </main>
+</body>
