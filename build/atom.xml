@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2021-09-28T12:21:SZ</updated>
+  <updated>2021-09-28T12:22:SZ</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -275,7 +275,7 @@ shadowed(variable) :-
   define(sub_scope, variable),
   nested_scope(scope, sub_scope).</code></pre>
 <p>That's all there is to it! As you can tell, the transformation from the logical description of the analysis to the actual Datalog code is quite straight-forward.</p>
-<p>When creating your Datalog queries, you can either check for "positive" or "negative" scenarios. With positive scenarios, I mean Datalog queries that search which values match certain criteria (like in this example). Negative scenarios on the other hand check if an error situation occurred.</p>
+<p>When creating your Datalog queries, you can either check for "positive" or "negative" scenarios. With positive scenarios, I mean Datalog queries that search which values match certain criteria. Negative scenarios on the other hand check if an error situation occurred (like in this example).</p>
 <p>One final thing to note here is that in a more complete implementation the query would contain extra information (for example line numbers). This has some additional benefits:</p>
 <ol>
 <li>You can use the line numbers in your query results (e.g. compiler error messages).</li>
@@ -384,7 +384,7 @@ shadowed(variable) :-
 <h2 id="conclusion">Conclusion</h2>
 <p>In today's post, I showed how you can use Datalog from your Haskell code to perform complex analyses. By first destructuring an analysis in terms of simple facts and then writing queries based on those facts, we can write our analyses in a way close to how we reason about our code.</p>
 <p>In this article we focused on an analysis for a simple language, but this approach is not limited to this usecase. For example, you can also use it for when you need to process complex data in a webserver, in data science, ...</p>
-<p>If you want to see a more complicated example of this approach, here's a <a href="https://github.com/luc-tielen/playground/blob/dead_code_elimination/src/Main.hs">dead code elimination</a> analysis. This example is more complicated than the one explained in this post and uses techniques like control flow analysis (in Datalog) to compute all dead code paths in a program. And if you really want to go all-in, you could structure your different analyses to gather all facts in a single traversal by <a href="./combining_folds_using_semigroups">combining them into one fold</a>.</p>
+<p>If you want to see a more complicated example of this approach, here's a <a href="https://github.com/luc-tielen/playground/blob/dead_code_elimination/src/Main.hs">dead code elimination</a> analysis. This example is more complicated than the one explained in this post and uses techniques like control flow analysis (in Datalog) to compute all dead code paths in a program. And if you really want to go all-in, you could structure your different analyses to gather all facts in a single traversal by <a href="/posts/combining_folds_using_semigroups">combining them into one fold</a>.</p>
 <p>If you have any questions or thoughts about this article, let me know on <a href="https://twitter.com/luctielen/status/1418954922209460236">Twitter</a>. If you want to play around with the code from this post, it can be found <a href="https://github.com/luc-tielen/playground/blob/static_analysis_blogpost/src/Main.hs">here</a>.</p>]]></content>
   </entry>
   <entry>
