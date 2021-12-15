@@ -1,34 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="description" content="{{siteTitle}}">
-    <meta name="author" content="{{siteAuthor}}">
-    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <meta name="description" content="{{siteTitle}}" />
+    <meta name="author" content="{{siteAuthor}}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{siteTitle}}</title>
-    <link rel="icon" type="image/png" href="/images/favicon.png">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     {{>site/templates/header.html}}
-    <main>
+    <main class="about">
       <h1>Luc Tielen</h1>
       <p>
-        I'm a software engineer from Belgium passionate about functional programming, compilers and logic.
-        {{#twitterHandle}}
-        You can reach out to me on <a href="https://twitter.com/{{twitterHandle}}">Twitter</a>.
-        {{/twitterHandle}}
-        {{#githubUser}}
-        My open source code can be found on <a href="https://github.com/{{githubUser}}">Github</a>.
-        {{/githubUser}}
-        </p>
-      <p>
-        When I'm not tinkering on compilers, I spend most of my free time exploring on my bike or going for a walk with my dog.
+        I'm a freelance software engineer from Belgium passionate about
+        functional programming, compilers and logic. Currently having fun
+        building the
+        <a href="https://github.com/luc-tielen/eclair-lang"
+          >eclair programming language</a
+        >, an experimental high-performance Datalog. When I'm not tinkering on
+        compilers, I spend most of my free time exploring on my bike or going
+        for a walk with my dog.
       </p>
-      <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
-           style="display:none;" width="1" height="1"/>
+      <p>
+        {{#twitterHandle}} You can reach out to me on
+        <a href="https://twitter.com/{{twitterHandle}}">Twitter</a>.
+        {{/twitterHandle}} {{#githubUser}} My code can be found on
+        <a href="https://github.com/{{githubUser}}">Github</a>. {{/githubUser}}
+      </p>
+      <img
+        src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
+        style="display: none"
+        width="1"
+        height="1"
+      />
     </main>
-</body>
+  </body>
 </html>
