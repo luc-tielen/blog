@@ -1,21 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="description" content="{{siteTitle}}">
-    <meta name="author" content="{{siteAuthor}}">
-    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8" />
+    <meta name="description" content="{{siteTitle}}" />
+    <meta name="author" content="{{siteAuthor}}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{siteTitle}}</title>
-    <link rel="icon" type="image/png" href="/images/favicon.png">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
     {{>site/templates/header.html}}
     <main>
       <h1 class="videos-title">All videos</h1>
       {{>site/templates/video-list.html}}
+      <p>
+        I enjoy giving technical talks. If you are organizing a conference and
+        are looking for a speaker, contact me on {{#twitterHandle}}
+        <a href="https://twitter.com/{{twitterHandle}}">Twitter</a>!
+        {{/twitterHandle}}
+      </p>
     </main>
-</body>
+  </body>
 </html>
