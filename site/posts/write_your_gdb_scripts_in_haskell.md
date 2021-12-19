@@ -63,10 +63,12 @@ GDB scripts already are a big improvement over manually typing in commands each
 time, but I still felt many things to be less than ideal:
 
 1. The scripting language in GDB doesn't always work as expected. For example,
-   the `print` command does not print a value in a user-defined function!
+   some GDB commands that normally print information to the screen do not print
+   a value inside a user-defined function!
 2. Setting breakpoints and handling them is a 2-step process.
-3. There is no typesystem like in Haskell, issues in scripts are sometimes
-   detected only when the line in the script is triggered.
+3. There is no typesystem like in Haskell, issues in scripts are detected only
+   when the line in the script is triggered. The resulting errors can also be
+   *very* confusing.
 
 Instead of trying to keep track of all these oddities, I set out to write a
 library that tackles these issues. Here's what the same GDB script from before
