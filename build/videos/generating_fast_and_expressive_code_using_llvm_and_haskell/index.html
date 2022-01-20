@@ -5,20 +5,27 @@
     <meta name="description" content="FP -&gt; Compilers -&gt; Logic -&gt; Blog">
     <meta name="author" content="Luc Tielen">
     <meta name=viewport content="width=device-width, initial-scale=1">
-    <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="Generating fast and expressive code using LLVM and Haskell">
+    <meta name="twitter:description" content="">
+        <title>Generating fast and expressive code using LLVM and Haskell</title>
     <link rel="icon" type="image/png" href="/images/favicon.png">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
   </head>
-  <body>
-    <header>
-      <nav>
-        <a href="/">Blog</a>
-        <a href="/videos">Videos</a>
-        <a href="/about">About</a>
-        <div class="social">
-          <a href="https://twitter.com/luctielen">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/videos">Videos</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://twitter.com/luctielen">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 16 16"
@@ -57,30 +64,38 @@
         </svg>
       </a>
       <a href="/atom.xml">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              width="16"
-              height="16"
-            >
-              <path
-                d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"
-              />
-            </svg>
-          </a>
-        </div>
-      </nav>
-    </header>
-    <main>
-      <h1 class="posts-title">Posts tagged "c"</h1>
-      <ul class="posts">
-          <li>
-      <span>Dec 15, 2021</span>
-      <a href="/posts/write_your_gdb_scripts_in_haskell">Write your GDB scripts in Haskell</a>
-    </li>
-</ul>
-      <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
-           style="display:none;" width="1" height="1"/>
-    </main>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+          >
+            <path
+              d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"
+            />
+          </svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="video">
+    <h1>Generating fast and expressive code using LLVM and Haskell</h1>
+    <!--
+    <span class="date"></span>
+    -->
+    <iframe width="1156"
+            height="650"
+            src="https://www.youtube.com/embed/_Qb0mL72l2o"
+            title="Generating fast and expressive code using LLVM and Haskell"
+            frameborder="0"
+            allow="autoplay; clipboard-write; encrypted-media; gyroscope; accelerometer; picture-in-picture"
+            allowfullscreen>
+    </iframe>
+
+    <p>In this talk, I show how to create a language by making use of LLVM and Haskell. At the start, an introduction is given on LLVM and the corresponding Haskell bindings. Afterwards, I explain how techniques such as combinators and partial evaluation can be used to create performant functions optimized by LLVM. At the end, everything is brought together and the result is a small language that compiles all the way down to assembly.</p>
+<p>The code for the BF compiler can be found in <a href="https://github.com/luc-tielen/bf">this repository</a>.</p>
+<p>Since I gave this presentation, I created a <a href="https://github.com/luc-tielen/llvm-hs-combinators">Haskell package</a> that contains the functions I used in this talk.</p>
+    <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
+         style="display:none;" width="1" height="1"/>
+  </main>
 </body>
-</html>
