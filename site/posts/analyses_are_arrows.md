@@ -1,5 +1,5 @@
 ---
-title: Composing Soufflé analyses
+title: Analyses are arrows
 author: Luc Tielen
 postDate: Feb 14, 2022
 tags:
@@ -19,7 +19,7 @@ expected, but I do expect some familiarity with the more often used type-classes
 As a quick recap, the souffle-haskell library provides bindings for interacting
 with Soufflé Datalog. All functionality is provided via a `SouffleM` monad,
 which focuses on a single Datalog analysis / program. Like I mentioned in my
-["Static analysis using Haskell and Datalog" blogpost](../static_analysis_using_haskell_and_datalog/),
+[blogpost about "Static analysis using Haskell and Datalog"](../static_analysis_using_haskell_and_datalog/),
 an analysis consists of a few distinct parts:
 
 1. Find all relevant facts related to our Datalog analyses (in Haskell),
