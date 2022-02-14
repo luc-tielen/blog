@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/syntax.css">
+    <script defer data-domain="luctielen.com" src="https://plausible.io/js/plausible.js"></script>
   </head>
 </head>
 <body>
@@ -95,7 +96,5 @@
     <p>In this video, I optimized the C++ bindings of my <a href="https://github.com/luc-tielen/souffle-haskell/">souffle-haskell</a> library.</p>
 <p>Before this change, I allocated one big contiguous bytearray each time data was sent from Haskell to C++. After the change, a previously allocated bytearray is reused. Even with GHC Haskell's pinned memory bytearrays (not as expensive to allocate as normal <code>malloc</code>/<code>new</code> in C or C++), this ended up saving 5-10% time in terms of performance.</p>
 <p>The code can be found in this <a href="https://github.com/luc-tielen/souffle-haskell/pull/43">pull request</a>. This also includes the optimizations I did when serializing from C++ to Haskell, where I applied the same trick to get a 30-40% performance improvement.</p>
-    <img src="https://api.stathat.com/c?ukey=MTk2NzAgWkL6UC1F__NJ8FQSQf0CiA~~&key=27ZUKzMSpTwf7JNpDPdlHiA0WVlO&count=1"
-         style="display:none;" width="1" height="1"/>
   </main>
 </body>
