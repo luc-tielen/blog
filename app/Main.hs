@@ -10,6 +10,7 @@ import           Control.Lens
 import           Control.Monad
 import           Data.Aeson                 as A
 import           Data.Aeson.Lens
+import           Data.Either
 import           Data.Foldable (traverse_)
 import           Data.List (sortOn)
 import           Data.Map (Map)
@@ -22,6 +23,10 @@ import           Development.Shake.Forward
 import           Development.Shake.FilePath
 import           GHC.Generics               (Generic)
 import           Slick
+import           Slick.Pandoc
+import           Skylighting.Loader
+import           Skylighting.Syntax
+import           Text.Pandoc.Options
 
 import qualified Data.HashMap.Lazy as HML
 import qualified Data.Map as Map
@@ -174,7 +179,7 @@ buildPost srcPath = cacheAction ("build" :: T.Text, srcPath) $ do
   liftIO . putStrLn $ "Rebuilding blog post: " <> srcPath
   postContent <- readFile' srcPath
   -- load post content and metadata as JSON blob
-  postData <- markdownToHTML . T.pack $ postContent
+  postData <- mdToHTML . T.pack $ postContent
   let postUrl = T.pack $ dropDirectory1 $ dropExtension srcPath
       withPostUrl = _Object . at "url" ?~ String ("/" <> postUrl)
   -- Add additional metadata we've been able to compute
@@ -188,7 +193,7 @@ buildVideo srcPath = cacheAction ("build" :: T.Text, srcPath) $ do
   liftIO . putStrLn $ "Rebuilding video post: " <> srcPath
   videoPostContent <- readFile' srcPath
   -- load post content and metadata as JSON blob
-  videoPostData <- markdownToHTML . T.pack $ videoPostContent
+  videoPostData <- mdToHTML . T.pack $ videoPostContent
   let videoPostUrl = T.pack $ dropDirectory1 $ dropExtension srcPath
       withVideoPostUrl = _Object . at "url" ?~ String ("/" <> videoPostUrl)
   -- Add additional metadata we've been able to compute
@@ -265,6 +270,15 @@ buildRules = do
   buildFeed allPosts  -- TODO add videos?
   buildAbout
   copyStaticFiles
+
+mdToHTML :: T.Text -> Action Value
+mdToHTML txt = do
+  extraSyntaxes <- liftIO $ loadSyntaxesFromDir "app/syntax"
+  let extraSyntaxes' = fromRight defaultSyntaxMap extraSyntaxes
+      htmlOpts = defaultHtml5Options
+      syntaxMap = writerSyntaxMap htmlOpts <> extraSyntaxes'
+      htmlOptions = htmlOpts { writerSyntaxMap = syntaxMap }
+  markdownToHTMLWithOpts defaultMarkdownOptions htmlOptions txt
 
 main :: IO ()
 main = do
