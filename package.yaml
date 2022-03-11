@@ -27,6 +27,9 @@ executables:
     - base >= 4.7 && < 5
     - shake
     - slick
+    - pandoc
+    - skylighting-core
+    - skylighting
     - text
     - containers
     - unordered-containers

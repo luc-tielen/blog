@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.1.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f501697906a9da050b66991c41d5d0c258051739abce103207f015e345df0afa
+-- hash: cce92e6ecd4eae26ca4103c6a3ca1e60ec8bb08d7fee5a7d5d4f2053976ae209
 
 name:           blog
 version:        0.1.0.0
@@ -39,7 +39,10 @@ executable build-site
     , containers
     , lens
     , lens-aeson
+    , pandoc
     , shake
+    , skylighting
+    , skylighting-core
     , slick
     , text
     , time
