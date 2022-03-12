@@ -1,7 +1,7 @@
 ---
 title: Calling Zig from Haskell
 author: Luc Tielen
-postDate: Mar 9, 2022
+postDate: Mar 12, 2022
 tags:
   - zig
   - haskell
