@@ -166,6 +166,8 @@ functions. In order to do that, we first need an example struct, so let's define
 one:
 
 ```zig
+const Allocator = std.mem.Allocator;
+
 const Example = struct {
     field: i32,
 
@@ -177,7 +179,7 @@ const Example = struct {
     // This change is done so we can use any allocator (C allocator
     // in actual code, and the testing allocator in test code) to
     // allocate memory for our struct.
-    fn create(allocator: *Allocator) *Example {
+    fn create(allocator: Allocator) *Example {
         // If we fail to allocate, there is no good way to recover
         // in this case, so we error with a panic.
         const obj = allocator.create(Example)
