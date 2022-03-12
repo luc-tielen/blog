@@ -137,27 +137,27 @@
 <p>So how did I determine in the previous examples that a variable was shadowed? I made certain observations (facts) about the code and then combined these facts to form conclusions about the data. This is very close to how a logic programming language like Datalog works!</p>
 <p>For name shadowing, what are the basic facts? First of all, we need to keep track of which variables are defined in the program. Secondly, another important fact that we can use is which scopes are nested inside each other.</p>
 <p>In Datalog, we can write a query that uses these facts to check for name shadowing:</p>
-<pre class="datalog"><code>// Declarations for the facts and relations used in our analysis:
-.decl define(scope: symbol, variable: symbol)
-.decl nested_scope(scope: symbol, sub_scope: symbol)
-.decl shadowed(variable: symbol)
-
-// All data coming from Haskell needs to be marked as inputs,
-// the results of the analysis are marked as outputs.
-.input define
-.input nested_scope
-.output shadowed
-
-// Read this query as follows:
-//
-// A variable is shadowed iff:
-// it is defined in a scope &#39;scope&#39;
-// AND it is defined again in scope &#39;sub_scope&#39;
-// AND &#39;sub_scope&#39; is a scope nested inside of &#39;scope&#39;.
-shadowed(variable) :-
-  define(scope, variable),
-  define(sub_scope, variable),
-  nested_scope(scope, sub_scope).</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode datalog"><code class="sourceCode datalog"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">// Declarations for the facts and relations used in our analysis:</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">.decl</span> define<span class="cn">(</span>scope<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">,</span> variable<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">.decl</span> nested_scope<span class="cn">(</span>scope<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">,</span> sub_scope<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="kw">.decl</span> shadowed<span class="cn">(</span>variable<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="co">// All data coming from Haskell needs to be marked as inputs,</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co">// the results of the analysis are marked as outputs.</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="kw">.input</span> define</span>
+<span id="cb5-9"><a href="#cb5-9"></a><span class="kw">.input</span> nested_scope</span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="kw">.output</span> shadowed</span>
+<span id="cb5-11"><a href="#cb5-11"></a></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="co">// Read this query as follows:</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="co">//</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a><span class="co">// A variable is shadowed iff:</span></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="co">// it is defined in a scope &#39;scope&#39;</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="co">// AND it is defined again in scope &#39;sub_scope&#39;</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="co">// AND &#39;sub_scope&#39; is a scope nested inside of &#39;scope&#39;.</span></span>
+<span id="cb5-18"><a href="#cb5-18"></a>shadowed<span class="cn">(</span>variable<span class="cn">)</span> <span class="cn">:-</span></span>
+<span id="cb5-19"><a href="#cb5-19"></a>  define<span class="cn">(</span>scope<span class="cn">,</span> variable<span class="cn">),</span></span>
+<span id="cb5-20"><a href="#cb5-20"></a>  define<span class="cn">(</span>sub_scope<span class="cn">,</span> variable<span class="cn">),</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a>  nested_scope<span class="cn">(</span>scope<span class="cn">,</span> sub_scope<span class="cn">).</span></span></code></pre></div>
 <p>That's all there is to it! As you can tell, the transformation from the logical description of the analysis to the actual Datalog code is quite straight-forward.</p>
 <p>When creating your Datalog queries, you can either check for "positive" or "negative" scenarios. With positive scenarios, I mean Datalog queries that search which values match certain criteria. Negative scenarios on the other hand check if an error situation occurred (like in this example).</p>
 <p>One final thing to note here is that in a more complete implementation the query would contain extra information (for example line numbers). This has some additional benefits:</p>

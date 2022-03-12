@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="FP -&gt; Compilers -&gt; Logic -&gt; Blog">
+    <meta name="author" content="Luc Tielen">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="Calling Zig from Haskell">
+    <meta name="twitter:description" content="">
+        <title>Calling Zig from Haskell</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <script defer data-domain="luctielen.com" src="https://plausible.io/js/plausible.js"></script>
+  </head>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/videos">Videos</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://twitter.com/luctielen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+        >
+          <path
+            d="M16 3.538a6.461 6.461 0 01-1.884.516 3.301 3.301 0 001.444-1.816 6.607 6.607 0 01-2.084.797 3.28 3.28 0 00-2.397-1.034 3.28 3.28 0 00-3.197 4.028 9.321 9.321 0 01-6.766-3.431 3.284 3.284 0 001.015 4.381A3.301 3.301 0 01.643 6.57v.041A3.283 3.283 0 003.277 9.83a3.291 3.291 0 01-1.485.057 3.293 3.293 0 003.066 2.281 6.586 6.586 0 01-4.862 1.359 9.286 9.286 0 005.034 1.475c6.037 0 9.341-5.003 9.341-9.341 0-.144-.003-.284-.009-.425a6.59 6.59 0 001.637-1.697z"
+          />
+        </svg>
+      </a>
+       
+      <a href="https://github.com/luc-tielen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+        >
+          <path
+            d="M8 .198a8 8 0 00-2.529 15.591c.4.074.547-.174.547-.385 0-.191-.008-.821-.011-1.489-2.226.484-2.695-.944-2.695-.944-.364-.925-.888-1.171-.888-1.171-.726-.497.055-.486.055-.486.803.056 1.226.824 1.226.824.714 1.223 1.872.869 2.328.665.072-.517.279-.87.508-1.07-1.777-.202-3.645-.888-3.645-3.954 0-.873.313-1.587.824-2.147-.083-.202-.357-1.015.077-2.117 0 0 .672-.215 2.201.82A7.672 7.672 0 018 4.066c.68.003 1.365.092 2.004.269 1.527-1.035 2.198-.82 2.198-.82.435 1.102.162 1.916.079 2.117.513.56.823 1.274.823 2.147 0 3.073-1.872 3.749-3.653 3.947.287.248.543.735.543 1.481 0 1.07-.009 1.932-.009 2.195 0 .213.144.462.55.384A8 8 0 008.001.196z"
+          />
+        </svg>
+      </a>
+       
+      <a href="https://www.youtube.com/channel/UCeMz1NwTQlkhQvIFYMZoAJQ">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
+          />
+        </svg>
+      </a>
+      <a href="/atom.xml">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+          >
+            <path
+              d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"
+            />
+          </svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="post">
+    <h1>Calling Zig from Haskell</h1>
+    <!--
+    <span class="date"></span>
+    -->
+    <div class="tags">
+      <span class="tag tag-zig"><a href="/tag/zig">zig</a></span>
+      <span class="tag tag-haskell"><a href="/tag/haskell">haskell</a></span>
+    </div>
+    <p>In today's article, I will show how you can interface Zig code with Haskell. Zig is a low level language that aims to be a modern replacement for C (minus all the footguns). Zig has great C interop and because of this, calling into Zig from Haskell is almost as easy as calling into C code.</p>
+<h2 id="project-setup">Project setup</h2>
+<p>Since our example will contain both Haskell and Zig code, we will need to setup our project for both languages. From here on, I will assume you have both <code>cabal</code> (a Haskell project/ build tool) and <code>zig</code> (the Zig compiler) installed. First, let's run some commands to initialize a Haskell project using <code>cabal</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a>$ <span class="fu">mkdir</span> language-interop</span>
+<span id="cb1-2"><a href="#cb1-2"></a>$ <span class="bu">cd</span> language-interop</span>
+<span id="cb1-3"><a href="#cb1-3"></a>$ <span class="ex">cabal</span> init --minimal --exe</span></code></pre></div>
+<p>This will generate the following directories and files:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a>$ <span class="ex">tree</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">.</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>├── <span class="ex">app</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>│   └── <span class="ex">Main.hs</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>├── <span class="ex">CHANGELOG.md</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>└── <span class="ex">language-interop.cabal</span></span></code></pre></div>
+<p>Now that we have the initial Haskell project skeleton, let's setup our Zig library called "example". We will setup our Zig project in a "cbits" folder inside the Haskell project (a convention for storing C, C++ (and Zig?) files in a Haskell project).</p>
+<p>Here are the commands to setup the Zig library:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="fu">mkdir</span> -p cbits/example</span>
+<span id="cb3-2"><a href="#cb3-2"></a>$ <span class="bu">cd</span> cbits/example</span>
+<span id="cb3-3"><a href="#cb3-3"></a>$ <span class="ex">zig</span> init-lib</span></code></pre></div>
+<p>We're not done yet though. We need to modify the <code>build.zig</code> file to take care of a few things:</p>
+<ol>
+<li>We need to link with the C library (<code>libc</code>) since we will be using the C allocator from Zig later on,</li>
+<li>In debug mode: bundle the "compiler runtime" to avoid linker errors related to safety checks generated by Zig (e.g. stack protection),</li>
+<li>In release mode: disable the safety checks in Zig.</li>
+</ol>
+<p>This is what the modified <code>build.zig</code> should look like:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode zig"><code class="sourceCode zig"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">const</span> std <span class="op">=</span> <span class="im">@import</span>(<span class="st">&quot;std&quot;</span>);</span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="cn">pub</span> <span class="cn">fn</span> build(b: <span class="op">*</span>std<span class="op">.</span>build<span class="op">.</span>Builder) <span class="dt">void</span> {</span>
+<span id="cb4-4"><a href="#cb4-4"></a>    <span class="kw">const</span> mode <span class="op">=</span> b<span class="op">.</span>standardReleaseOptions();</span>
+<span id="cb4-5"><a href="#cb4-5"></a></span>
+<span id="cb4-6"><a href="#cb4-6"></a>    <span class="kw">const</span> lib <span class="op">=</span> b<span class="op">.</span>addStaticLibrary(<span class="st">&quot;example&quot;</span>, <span class="st">&quot;src/main.zig&quot;</span>);</span>
+<span id="cb4-7"><a href="#cb4-7"></a>    lib<span class="op">.</span>setBuildMode(mode);</span>
+<span id="cb4-8"><a href="#cb4-8"></a>    lib<span class="op">.</span>linkLibC();  <span class="co">// Needed for linking with libc</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a>    switch (mode) {</span>
+<span id="cb4-10"><a href="#cb4-10"></a>        <span class="co">// This includes the compiler runtime (Zig runtime checks):</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a>        <span class="op">.</span>Debug, <span class="op">.</span>ReleaseSafe <span class="op">=&gt;</span> lib<span class="op">.</span>bundle_compiler_rt <span class="op">=</span> <span class="kw">true</span>,</span>
+<span id="cb4-12"><a href="#cb4-12"></a>        <span class="co">// This turns off the checks completely for release mode:</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a>        <span class="op">.</span>ReleaseFast, <span class="op">.</span>ReleaseSmall <span class="op">=&gt;</span> lib<span class="op">.</span>disable_stack_probing <span class="op">=</span> <span class="kw">true</span>,</span>
+<span id="cb4-14"><a href="#cb4-14"></a>    }</span>
+<span id="cb4-15"><a href="#cb4-15"></a>    lib<span class="op">.</span>install();</span>
+<span id="cb4-16"><a href="#cb4-16"></a></span>
+<span id="cb4-17"><a href="#cb4-17"></a>    <span class="kw">const</span> main_tests <span class="op">=</span> b<span class="op">.</span>addTest(<span class="st">&quot;src/main.zig&quot;</span>);</span>
+<span id="cb4-18"><a href="#cb4-18"></a>    <span class="co">// Depending on how you set up your Zig code,</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a>    <span class="co">// you may need to link with libc in your tests as well:</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a>    main_tests<span class="op">.</span>linkLibC();</span>
+<span id="cb4-21"><a href="#cb4-21"></a>    main_tests<span class="op">.</span>setBuildMode(mode);</span>
+<span id="cb4-22"><a href="#cb4-22"></a></span>
+<span id="cb4-23"><a href="#cb4-23"></a>    <span class="kw">const</span> test_step <span class="op">=</span> b<span class="op">.</span>step(<span class="st">&quot;test&quot;</span>, <span class="st">&quot;Run library tests&quot;</span>);</span>
+<span id="cb4-24"><a href="#cb4-24"></a>    test_step<span class="op">.</span>dependOn(<span class="op">&amp;</span>main_tests<span class="op">.</span>step);</span>
+<span id="cb4-25"><a href="#cb4-25"></a>}</span></code></pre></div>
+<p>The initial configuration for Zig is finished. Confirm everything works correctly by running <code>zig build</code> in the <code>cbits/example/</code> directory. If it doesn't show any errors, then the Zig setup is finished and we can move on to the Haskell setup! For this, we need to update the cabal file to take the Zig code into account by adding the <code>extra-lib-dirs</code> and <code>extra-libraries</code> info:</p>
+<pre class="cabal"><code>-- other cabal config ...
+
+executable zig-interop
+  -- executable config ...
+
+  -- The folder where cabal will look for .a files:
+  extra-lib-dirs: cbits/example/zig-out/lib/
+  -- The name of the libraries we want to link with.
+  -- &quot;example&quot; means we want to link with &quot;libexample.a&quot;.
+  extra-libraries: example</code></pre>
+<p>And we're all set! If you followed along with all the steps, your entire project structure should look as follows:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a>$ <span class="ex">tree</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="ex">.</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>├── <span class="ex">app</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>│   └── <span class="ex">Main.hs</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>├── <span class="ex">cbits</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>│   └── <span class="ex">example</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>│       ├── <span class="ex">build.zig</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a>│       └── <span class="ex">src</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>│           └── <span class="ex">main.zig</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>├── <span class="ex">CHANGELOG.md</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>└── <span class="ex">zig-interop.cabal</span></span></code></pre></div>
+<h2 id="interfacing-haskell-with-zig">Interfacing Haskell with Zig</h2>
+<p>Our project is all ready, so we can start calling into Zig code! Let's start with a simple top level function <code>add</code> in <code>main.zig</code> that adds 2 numbers together:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode zig"><code class="sourceCode zig"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">// Note: Export is needed to make the function available outside of Zig</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="co">// The C calling convention is used by default for exported functions,</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co">// but it&#39;s better to be explicit about it (specified by &quot;callconv&quot;).</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="kw">export</span> <span class="cn">fn</span> add(a: <span class="dt">i32</span>, b: <span class="dt">i32</span>) <span class="kw">callconv</span>(<span class="op">.</span>C) <span class="dt">i32</span> {</span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="kw">return</span> a <span class="op">+</span> b;</span>
+<span id="cb7-6"><a href="#cb7-6"></a>}</span></code></pre></div>
+<p>Before we change the Haskell code, we need to re-compile the code using <code>zig build</code> again. Quick tip: use a Makefile or a script to automate all these small steps. Once the Zig library has been built, we need to introduce a foreign import in <code>Main.hs</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a>foreign <span class="kw">import</span> ccall unsafe &quot;add&quot; foreignAdd</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="ot">  ::</span> <span class="dt">CInt</span> <span class="ot">-&gt;</span> <span class="dt">CInt</span> <span class="ot">-&gt;</span> <span class="dt">CInt</span></span></code></pre></div>
+<p>This import is needed to be able to access the "add" function from Zig in Haskell as "foreignAdd". For a detailed explanation of all the keywords in the import, check out my previous blogpost on <a href="../calling_cpp_from_haskell">Calling C++ from Haskell</a>. After importing the Zig function, we can call it like any other Haskell code:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb9-2"><a href="#cb9-2"></a>main <span class="ot">=</span> <span class="fu">print</span> <span class="op">$</span> foreignAdd <span class="dv">3</span> <span class="dv">4</span>  <span class="co">-- prints 7 to the console</span></span></code></pre></div>
+<p>This snippet prints out <code>7</code> to the console. Great! Now for something a little more complicated: managing a Zig struct from Haskell and calling it's member functions. In order to do that, we first need an example struct, so let's define one:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode zig"><code class="sourceCode zig"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">const</span> Allocator <span class="op">=</span> std<span class="op">.</span>mem<span class="op">.</span>Allocator;</span>
+<span id="cb10-2"><a href="#cb10-2"></a></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="kw">const</span> Example <span class="op">=</span> <span class="kw">struct</span> {</span>
+<span id="cb10-4"><a href="#cb10-4"></a>    field: <span class="dt">i32</span>,</span>
+<span id="cb10-5"><a href="#cb10-5"></a></span>
+<span id="cb10-6"><a href="#cb10-6"></a>    <span class="co">// Note: normally the convention to initialize a struct is:</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>    <span class="co">// fn init() Example {</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a>    <span class="co">//     return Example{ .field = 42 };</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a>    <span class="co">// }</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a>    <span class="co">//</span></span>
+<span id="cb10-11"><a href="#cb10-11"></a>    <span class="co">// This change is done so we can use any allocator (C allocator</span></span>
+<span id="cb10-12"><a href="#cb10-12"></a>    <span class="co">// in actual code, and the testing allocator in test code) to</span></span>
+<span id="cb10-13"><a href="#cb10-13"></a>    <span class="co">// allocate memory for our struct.</span></span>
+<span id="cb10-14"><a href="#cb10-14"></a>    <span class="cn">fn</span> create(allocator: Allocator) <span class="op">*</span>Example {</span>
+<span id="cb10-15"><a href="#cb10-15"></a>        <span class="co">// If we fail to allocate, there is no good way to recover</span></span>
+<span id="cb10-16"><a href="#cb10-16"></a>        <span class="co">// in this case, so we error with a panic.</span></span>
+<span id="cb10-17"><a href="#cb10-17"></a>        <span class="kw">const</span> obj <span class="op">=</span> allocator<span class="op">.</span>create(Example)</span>
+<span id="cb10-18"><a href="#cb10-18"></a>          catch std<span class="op">.</span>debug<span class="op">.</span>panic(<span class="st">&quot;Failed to allocate Example struct&quot;</span>, <span class="op">.</span>{});</span>
+<span id="cb10-19"><a href="#cb10-19"></a>        obj<span class="op">.</span>field <span class="op">=</span> <span class="dv">42</span>;</span>
+<span id="cb10-20"><a href="#cb10-20"></a>        <span class="kw">return</span> obj;</span>
+<span id="cb10-21"><a href="#cb10-21"></a>    }</span>
+<span id="cb10-22"><a href="#cb10-22"></a></span>
+<span id="cb10-23"><a href="#cb10-23"></a>    <span class="cn">fn</span> deinit(self: <span class="op">*</span>Example) <span class="dt">void</span> {</span>
+<span id="cb10-24"><a href="#cb10-24"></a>        <span class="co">// No de-initialization needed for this simple struct</span></span>
+<span id="cb10-25"><a href="#cb10-25"></a>        <span class="cn">_</span> <span class="op">=</span> self;</span>
+<span id="cb10-26"><a href="#cb10-26"></a>    }</span>
+<span id="cb10-27"><a href="#cb10-27"></a></span>
+<span id="cb10-28"><a href="#cb10-28"></a>    <span class="cn">fn</span> do_stuff(self: <span class="op">*</span>Example, arg: <span class="dt">i32</span>) <span class="dt">bool</span> {</span>
+<span id="cb10-29"><a href="#cb10-29"></a>        <span class="kw">return</span> self<span class="op">.</span>field <span class="op">==</span> arg;</span>
+<span id="cb10-30"><a href="#cb10-30"></a>    }</span>
+<span id="cb10-31"><a href="#cb10-31"></a>};</span></code></pre></div>
+<p>The final thing we need to do on the Zig side is to write some free functions that wrap the functionality of the struct. The exported functions form the API that the Haskell code will call into:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode zig"><code class="sourceCode zig"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">export</span> <span class="cn">fn</span> example_create() <span class="kw">callconv</span>(<span class="op">.</span>C) <span class="op">*</span>Example {</span>
+<span id="cb11-2"><a href="#cb11-2"></a>    <span class="kw">return</span> Example<span class="op">.</span>create(std<span class="op">.</span>heap<span class="op">.</span>c_allocator);</span>
+<span id="cb11-3"><a href="#cb11-3"></a>}</span>
+<span id="cb11-4"><a href="#cb11-4"></a></span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="kw">export</span> <span class="cn">fn</span> example_destroy(ptr: <span class="op">?*</span>Example) <span class="kw">callconv</span>(<span class="op">.</span>C) <span class="dt">void</span> {</span>
+<span id="cb11-6"><a href="#cb11-6"></a>    std<span class="op">.</span>debug<span class="op">.</span>assert(ptr !<span class="op">=</span> <span class="kw">null</span>);</span>
+<span id="cb11-7"><a href="#cb11-7"></a></span>
+<span id="cb11-8"><a href="#cb11-8"></a>    <span class="kw">const</span> obj <span class="op">=</span> ptr<span class="op">.?</span>;</span>
+<span id="cb11-9"><a href="#cb11-9"></a>    obj<span class="op">.</span>deinit();</span>
+<span id="cb11-10"><a href="#cb11-10"></a>    std<span class="op">.</span>heap<span class="op">.</span>c_allocator<span class="op">.</span>destroy(obj);</span>
+<span id="cb11-11"><a href="#cb11-11"></a>}</span>
+<span id="cb11-12"><a href="#cb11-12"></a></span>
+<span id="cb11-13"><a href="#cb11-13"></a><span class="kw">export</span> <span class="cn">fn</span> example_do_stuff(ptr: <span class="op">?*</span>Example, arg: <span class="dt">i32</span>) <span class="kw">callconv</span>(<span class="op">.</span>C) <span class="dt">bool</span> {</span>
+<span id="cb11-14"><a href="#cb11-14"></a>    std<span class="op">.</span>debug<span class="op">.</span>assert(ptr !<span class="op">=</span> <span class="kw">null</span>);</span>
+<span id="cb11-15"><a href="#cb11-15"></a></span>
+<span id="cb11-16"><a href="#cb11-16"></a>    <span class="kw">return</span> ptr<span class="op">.?.</span>do_stuff(arg);</span>
+<span id="cb11-17"><a href="#cb11-17"></a>}</span></code></pre></div>
+<p>In the snippet above we have one function for each of the struct functions. Note that <code>example_destroy</code> and <code>example_do_stuff</code> take an optional pointer to the struct, since the Haskell code is in control of calling these functions and could pass in <em>any</em> pointer (that could be <code>null</code>).</p>
+<p>Since the allocator is passed to the <code>Example.create</code> function (a common pattern in Zig), this gives us flexibility regarding memory allocations. Here, the exported functions make use of the <code>std.heap.c_allocator</code> which is a fast allocator that uses the <code>malloc</code> and <code>free</code> functions from <code>libc</code> under the hood. At the same time, this setup allows writing Zig unit tests that use the testing allocator to check for potential memory leaks.</p>
+<p>Now it's time to bind to our Zig struct from Haskell:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1"></a>foreign <span class="kw">import</span> ccall &quot;example_create&quot; createExample</span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="ot">  ::</span> <span class="dt">IO</span> (<span class="dt">Ptr</span> <span class="dt">Example</span>)</span>
+<span id="cb12-3"><a href="#cb12-3"></a>foreign <span class="kw">import</span> ccall &quot;&amp;example_destroy&quot; destroyExample</span>
+<span id="cb12-4"><a href="#cb12-4"></a><span class="ot">  ::</span> <span class="dt">FunPtr</span> (<span class="dt">Ptr</span> <span class="dt">Example</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ())</span>
+<span id="cb12-5"><a href="#cb12-5"></a>foreign <span class="kw">import</span> ccall &quot;example_do_stuff&quot; doStuffExample</span>
+<span id="cb12-6"><a href="#cb12-6"></a><span class="ot">  ::</span> <span class="dt">Ptr</span> <span class="dt">Example</span> <span class="ot">-&gt;</span> <span class="dt">CInt</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> <span class="dt">CBool</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a></span>
+<span id="cb12-8"><a href="#cb12-8"></a><span class="kw">data</span> <span class="dt">Example</span></span>
+<span id="cb12-9"><a href="#cb12-9"></a></span>
+<span id="cb12-10"><a href="#cb12-10"></a><span class="ot">mkExample ::</span> <span class="dt">IO</span> (<span class="dt">ForeignPtr</span> <span class="dt">Example</span>)</span>
+<span id="cb12-11"><a href="#cb12-11"></a>mkExample <span class="ot">=</span> mask_ <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb12-12"><a href="#cb12-12"></a>  <span class="co">-- NOTE: mask_ is needed to avoid leaking memory between</span></span>
+<span id="cb12-13"><a href="#cb12-13"></a>  <span class="co">-- allocating the struct and wrapping the `Ptr` in a `ForeignPtr`.</span></span>
+<span id="cb12-14"><a href="#cb12-14"></a>  ptr <span class="ot">&lt;-</span> createExample</span>
+<span id="cb12-15"><a href="#cb12-15"></a>  newForeignPtr destroyExample ptr</span>
+<span id="cb12-16"><a href="#cb12-16"></a></span>
+<span id="cb12-17"><a href="#cb12-17"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb12-18"><a href="#cb12-18"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb12-19"><a href="#cb12-19"></a>  ptr <span class="ot">&lt;-</span> mkExample</span>
+<span id="cb12-20"><a href="#cb12-20"></a>  withForeignPtr ptr <span class="op">$</span> \p <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb12-21"><a href="#cb12-21"></a>    result <span class="ot">&lt;-</span> doStuffExample p <span class="dv">10</span></span>
+<span id="cb12-22"><a href="#cb12-22"></a>    <span class="fu">print</span> result</span></code></pre></div>
+<p>On the Haskell side, we need to create an empty datatype <code>Example</code>, that is used as a type-level tag for keeping track of the type a pointer is pointing to. This ensures at compile time that pointers of different types do not get mixed up (that could potentially lead to really weird and hard to find bugs).</p>
+<p>In Haskell, we don't have <code>defer</code> like in Zig to automatically cleanup memory that is no longer needed, but instead it provides a <code>ForeignPtr</code> type that automatically frees a pointer when it is no longer referenced. For each of the imported function calls to Zig we need to use <code>withForeignPtr</code> to get access to the underlying pointer (the <code>Ptr</code> type). Finally, once we have access to the <code>Ptr</code>, we can call the Zig code like any other function in Haskell.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this post I showed how it is possible to interface Zig with Haskell. Integrating the two languages with each other is not that much harder compared to calling C from Haskell thanks to the great language interop support provided by Zig.</p>
+<p>One thing to mention is that this approach isn't specific to Haskell, you would only need to swap out the Haskell code with your language of choice to bind to the underlying Zig code.</p>
+<p>If you have any questions or thoughts about this article, let me know on <a href="https://twitter.com/luctielen">Twitter</a>. If you want to play around with the code from this post, it can be found <a href="https://github.com/luc-tielen/playground/tree/calling-zig-from-haskell">here</a>.</p>
+  </main>
+</body>
