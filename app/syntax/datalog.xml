@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd">
+<language name="datalog" section="Sources"
+          version="4" kateversion="5.0"
+          extensions="*.dl"
+          mimetype=""
+          author="Souffle Team"
+          license="MIT License">
+  <highlighting>
+    <list name="keywords">
+      <item>.decl</item>
+      <item>.input</item>
+      <item>.output</item>
+    </list>
+    <list name="types">
+      <item>number</item>
+      <item>unsigned</item>
+      <item>float</item>
+      <item>symbol</item>
+    </list>
+    <list name="functors">
+      <item>cat</item>
+    </list>
+    <list name="conditions">
+      <item>=</item>
+      <item>!</item>
+      <item>&lt;</item>
+      <item>&lt;=</item>
+      <item>&gt;</item>
+      <item>&gt;=</item>
+    </list>
+    <list name="operators">
+      <item>(</item>
+      <item>)</item>
+      <item>.</item>
+      <item>,</item>
+      <item>:</item>
+    </list>
+    <contexts>
+      <context name="souffle" attribute="Normal Text" lineEndContext="#stay">
+        <DetectSpaces />
+
+        <RegExpr attribute="Comment" String="//.*" context="comment" />
+        <DetectChar attribute="String" context="string" char="&quot;" />
+        <Int attribute="Int" context="#stay" />
+
+        <keyword attribute="Keyword"   String="keywords" />
+        <keyword attribute="Data Type" String="types" />
+        <keyword attribute="Keyword"   String="functors" />
+        <keyword attribute="Keyword"   String="conditions" />
+        <RegExpr attribute="Operator" String="[:,-\.()]"/>
+      </context>
+
+      <context name="symbol" attribute="Symbol" lineEndContext="#pop">
+        <DetectChar attribute="Symbol" context="symbol-string" char="&quot;" />
+        <RegExpr attribute="Symbol" String="([-a-zA-Z$._][-a-zA-Z$._0-9]*|[0-9]+)" context="#pop" />
+      </context>
+
+      <context name="symbol-string" attribute="Symbol" lineEndContext="#stay">
+        <DetectChar attribute="Symbol" context="#pop#pop" char="&quot;" />
+      </context>
+
+      <context name="string" attribute="String" lineEndContext="#stay">
+        <DetectChar attribute="String" context="#pop" char="&quot;" />
+      </context>
+
+      <context name="comment" attribute="Comment" lineEndContext="#pop">
+        <DetectSpaces />
+        <!-- TODO: Add FileCheck syntax highlighting -->
+        <IncludeRules context="##Comments" />
+        <DetectIdentifier />
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal Text" defStyleNum="dsNormal" />
+      <itemData name="Keyword" defStyleNum="dsKeyword" />
+      <itemData name="Data Type" defStyleNum="dsDataType" />
+      <itemData name="Int" defStyleNum="dsDecVal" />
+      <itemData name="String" defStyleNum="dsString" />
+      <itemData name="Comment" defStyleNum="dsComment" />
+      <itemData name="Symbol" defStyleNum="dsFunction" />
+      <itemData name="Operator" defStyleNum="dsConstant" />
+    </itemDatas>
+  </highlighting>
+  <general>
+    <comments>
+      <comment name="singleLine" start="//" />
+    </comments>
+    <keywords casesensitive="1" weakDeliminator="." />
+  </general>
+</language>
+<!--
+// kate: space-indent on; indent-width 2; replace-tabs on;
+-->
