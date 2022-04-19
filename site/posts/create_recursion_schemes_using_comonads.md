@@ -55,7 +55,7 @@ gcata :: (Recursive t, Comonad w)
 ```
 
 The signature tells us the following: if we pass in a "distributive law" that
-describes what actions to perform at each node of a recursive data structure,
+describes what actions to perform at each node of a recursive datastructure,
 and if we pass in an algebra for transforming a single layer of a recursive
 structure to a value, then we can fold down the entire recursive structure down
 to a single result value.
@@ -79,7 +79,7 @@ example
 example f g = gcata (distZygoT f distPara) g
 ```
 
-These distributive law combinators gets us *really far*. But for my usecase,
+These distributive law combinators get us *really far*. But for my usecase,
 this still wasn't enough. I needed to write a compiler pass, where I needed to
 do 2 helper folds and 1 final fold that had access to the results of the
 previous 2 folds. On top of that, both the final fold and one of the helper
@@ -91,7 +91,7 @@ Since the distributive law argument passed to `gcata` can make use of any
 need. In the situation I just mentioned, the datastructure needs access to four
 distinct values:
 
-1. The original recursive data structure,
+1. The original recursive datastructure,
 2. The result from the first helper fold,
 3. The result from the second helper fold,
 4. The result from the final fold.
@@ -158,12 +158,23 @@ distributiveLaw f g base_t_quad =
 ```
 
 And that's it! The function is dense, but the good thing is that the complexity
-is isolated to a small piece of code. Now that we have this distributive
+is isolated to a small piece of code. Now that we have defined this distributive
 law, we could start using it together with `gcata` and 3 functions as follows:
 
 ```haskell
 example = gcata (distributiveLaw _helperAlgebra1 _helperAlgebra2) _algebra3
 ```
+
+If we try to visualize what's going on, we
+end up with something like the figure below. During a recursive bottom-up
+traversal, 3 functions are used to compute the results from the subtrees. These
+3 results are combined with the node itself and stored in the `Quad` datatype,
+and passed onto the next level up in the tree.
+
+<img src="/images/recursion-schemes-using-comonads.png"
+    height="300px"
+    style="display: block; margin: auto; margin-bottom: 1em; margin-top: 1em;"
+    />
 
 As a final note, you can extend this technique to an N-ary tuple, allowing you
 to do N+1 simultaneous folds over a recursive structure. On top of that, the
