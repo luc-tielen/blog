@@ -205,6 +205,8 @@ ul.posts li span {
 
 .post-image {
   margin-bottom: 2rem;
+  object-fit: contain;
+  max-height: 500px;
 }
 
 .post h1 + p {
