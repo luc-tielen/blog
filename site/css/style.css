@@ -101,6 +101,8 @@ pre {
   overflow-x: auto;
   border-radius: 8px;
   padding: 8px 8px 8px 8px;
+  margin-top: 0;
+  margin-bottom: 1em;
 }
 
 code {
