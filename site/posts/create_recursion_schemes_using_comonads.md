@@ -7,7 +7,7 @@ tags:
 image: recursion-schemes-using-comonads.png
 ---
 
-In today's post, I explain how comonads can be used to create a taylor-made
+In today's post, I explain how comonads can be used to create a tailor-made
 recursion scheme to perform computations based on multiple simultaneous folds
 over a single recursive data type.
 
@@ -186,7 +186,7 @@ is lazy, if you don't use those sub-results, they won't even get evaluated!
 ## Conclusion
 
 In this post I showed how comonads in combination with the extremely general
-`gcata` function can be used to create taylor-made recursion schemes. By
+`gcata` function can be used to create tailor-made recursion schemes. By
 providing our own `Comonad` type and following a mechanical process for defining
 a distributive law, we can create a recursion scheme that does exactly what we
 need.
