@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2022-04-20T06:58:SZ</updated>
+  <updated>2022-04-20T12:34:SZ</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -15,7 +15,7 @@
       <updated></updated>
       <category term="haskell"/>
       <summary></summary>
-      <content type="html"><![CDATA[<p>In today's post, I explain how comonads can be used to create a taylor-made recursion scheme to perform computations based on multiple simultaneous folds over a single recursive data type.</p>
+      <content type="html"><![CDATA[<p>In today's post, I explain how comonads can be used to create a tailor-made recursion scheme to perform computations based on multiple simultaneous folds over a single recursive data type.</p>
 <p>The technique is based on the theoretical heavy paper named <a href="https://www.semanticscholar.org/paper/Recursion-Schemes-from-Comonads-Uustalu-Vene/d9a0b1804341c03bd3cae678c363e4ec317257b5?p2df">"Recursion Schemes from Comonads"</a>, but I will try to explain it as much as possible in an approachable way from a pragmatic point of view. I will assume some familiarity with Haskell and the <a href="https://hackage.haskell.org/package/recursion-schemes">recursion-schemes library</a> though, to avoid this article from exploding in size. If you are interested and want to learn more about the nitty-gritty details of the recursion-schemes library explained in an accessible way, I can recommend <a href="https://blog.sumtypeofway.com/posts/introduction-to-recursion-schemes.html">Patrick Thomson's great 6-part series of recursion-scheme blogposts</a>.</p>
 <h2 id="the-case-for-generalized-recursion-schemes">The case for generalized recursion schemes</h2>
 <p>Before I explain the technique, I have to point out that most usecases can probably be covered by an already existing recursion scheme provided by the <code>recursion-schemes</code> library. Always try to use an existing scheme where possible, since it is just much simpler and easier to maintain over time!</p>
@@ -105,7 +105,7 @@
     /></p>
 <p>As a final note, you can extend this technique to an N-ary tuple, allowing you to do N+1 simultaneous folds over a recursive structure. On top of that, the performance will still only be <code>O(n)</code> (with n equal to the size of the recursive structure), since the results from the subtrees are computed and collected on the fly while traversing the recursive structure. And since Haskell is lazy, if you don't use those sub-results, they won't even get evaluated!</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this post I showed how comonads in combination with the extremely general <code>gcata</code> function can be used to create taylor-made recursion schemes. By providing our own <code>Comonad</code> type and following a mechanical process for defining a distributive law, we can create a recursion scheme that does exactly what we need.</p>
+<p>In this post I showed how comonads in combination with the extremely general <code>gcata</code> function can be used to create tailor-made recursion schemes. By providing our own <code>Comonad</code> type and following a mechanical process for defining a distributive law, we can create a recursion scheme that does exactly what we need.</p>
 <p>If you want to see a couple of places where I use this technique in action, you can look <a href="https://github.com/luc-tielen/eclair-lang/blob/0fa68eadb6f75b890f635a96d32469c3c761cedb/lib/Eclair/RA/Lower.hs#L83-L84">here for the actual code using <code>Quad</code></a> and <a href="https://github.com/luc-tielen/eclair-lang/blob/0fa68eadb6f75b890f635a96d32469c3c761cedb/lib/Eclair/EIR/Lower.hs#L162-L201">here for a similar example using <code>Triple</code> for LLVM code generation</a>. The technique proved to be very valuable, since the specialized recursion-scheme helped me structure the different moving parts of a complex pass in my Datalog compiler. Be warned though that both examples are not that straight-forward since they are quite large.</p>
 <p>Finally, if you have any questions or thoughts about this article, let me know on <a href="https://twitter.com/luctielen">Twitter</a>.</p>]]></content>
   </entry>
