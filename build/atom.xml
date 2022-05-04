@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2022-05-04T08:42:SZ</updated>
+  <updated>2022-05-04T09:04:11Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -12,7 +12,7 @@
       <title>Create recursion-schemes using comonads</title>
       <link href="https://luctielen.com/posts/create_recursion_schemes_using_comonads"/>
       <id>https://luctielen.com/posts/create_recursion_schemes_using_comonads</id>
-      <updated></updated>
+      <updated>2022-04-20T00:00:00Z</updated>
       <category term="haskell"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>In today's post, I explain how comonads can be used to create a tailor-made recursion scheme to perform computations based on multiple simultaneous folds over a single recursive data type.</p>
@@ -113,7 +113,7 @@
       <title>Calling Zig from Haskell</title>
       <link href="https://luctielen.com/posts/calling_zig_from_haskell"/>
       <id>https://luctielen.com/posts/calling_zig_from_haskell</id>
-      <updated></updated>
+      <updated>2022-03-12T00:00:00Z</updated>
       <category term="zig"/>
       <category term="haskell"/>
       <summary></summary>
@@ -290,7 +290,7 @@ executable zig-interop
       <title>Analyses are arrows</title>
       <link href="https://luctielen.com/posts/analyses_are_arrows"/>
       <id>https://luctielen.com/posts/analyses_are_arrows</id>
-      <updated></updated>
+      <updated>2022-02-14T00:00:00Z</updated>
       <category term="haskell"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>In today's post, I explore how we can use Haskell to compose multiple Soufflé Datalog analyses in an elegant and principled way using various Haskell type-classes. No deep knowledge of Soufflé Datalog or the <a href="https://github.com/luc-tielen/souffle-haskell">souffle-haskell library</a> is expected, but I do expect some familiarity with the more often used type-classes (Functor, Applicative, ...).</p>
@@ -469,7 +469,7 @@ executable zig-interop
       <title>Write your GDB scripts in Haskell</title>
       <link href="https://luctielen.com/posts/write_your_gdb_scripts_in_haskell"/>
       <id>https://luctielen.com/posts/write_your_gdb_scripts_in_haskell</id>
-      <updated></updated>
+      <updated>2021-12-19T00:00:00Z</updated>
       <category term="c++"/>
       <category term="debugging"/>
       <category term="haskell"/>
@@ -607,7 +607,7 @@ end</code></pre>
       <title>Making LLVM GEP safer in Haskell</title>
       <link href="https://luctielen.com/posts/making_llvm_gep_safer_in_haskell"/>
       <id>https://luctielen.com/posts/making_llvm_gep_safer_in_haskell</id>
-      <updated></updated>
+      <updated>2021-09-28T00:00:00Z</updated>
       <category term="llvm"/>
       <category term="haskell"/>
       <summary></summary>
@@ -797,7 +797,7 @@ end</code></pre>
       <title>Static analysis using Haskell and Datalog</title>
       <link href="https://luctielen.com/posts/static_analysis_using_haskell_and_datalog"/>
       <id>https://luctielen.com/posts/static_analysis_using_haskell_and_datalog</id>
-      <updated></updated>
+      <updated>2021-07-24T00:00:00Z</updated>
       <category term="haskell"/>
       <category term="datalog"/>
       <category term="static analysis"/>
@@ -986,7 +986,7 @@ end</code></pre>
       <title>Combining folds using semigroups</title>
       <link href="https://luctielen.com/posts/combining_folds_using_semigroups"/>
       <id>https://luctielen.com/posts/combining_folds_using_semigroups</id>
-      <updated></updated>
+      <updated>2021-03-27T00:00:00Z</updated>
       <category term="haskell"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>In today's post, I will show how to combine many recursion-scheme folds using semigroups. For seasoned Haskellers using the library, this trick might be well known or obvious, but I decided to write it down anyway for the rest of us mere mortals <span class="emoji" data-emoji="smiley">😃</span>. I will assume a little familiarity with recursion-schemes though. If this isn't the case, be sure to check out the (recently revised) <a href="https://github.com/recursion-schemes/recursion-schemes/">recursion-schemes README</a> for an introduction to the library.</p>
@@ -1141,7 +1141,7 @@ end</code></pre>
       <title>Supercharge your handles using phantom types</title>
       <link href="https://luctielen.com/posts/supercharge_your_handles_with_phantom_types"/>
       <id>https://luctielen.com/posts/supercharge_your_handles_with_phantom_types</id>
-      <updated></updated>
+      <updated>2021-03-13T00:00:00Z</updated>
       <category term="haskell"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>In this article, I show how to use phantom types in combination with the "Handle pattern" to create more type-safe and user-friendly APIs in Haskell. I do this based on my experience adding this idea to the <a href="https://github.com/luc-tielen/souffle-haskell">souffle-haskell</a> library.</p>
@@ -1279,7 +1279,7 @@ end</code></pre>
       <title>Calling C++ from Haskell</title>
       <link href="https://luctielen.com/posts/calling_cpp_from_haskell"/>
       <id>https://luctielen.com/posts/calling_cpp_from_haskell</id>
-      <updated></updated>
+      <updated>2021-01-12T00:00:00Z</updated>
       <category term="haskell"/>
       <category term="c++"/>
       <summary></summary>
@@ -1587,7 +1587,7 @@ end</code></pre>
       <title>How to set up your blog with Haskell, Slick and Netlify</title>
       <link href="https://luctielen.com/posts/how_to_setup_blog_with_haskell_slick_and_netlify"/>
       <id>https://luctielen.com/posts/how_to_setup_blog_with_haskell_slick_and_netlify</id>
-      <updated></updated>
+      <updated>2020-12-21T00:00:00Z</updated>
       <category term="haskell"/>
       <category term="meta"/>
       <summary></summary>
