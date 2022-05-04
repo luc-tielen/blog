@@ -231,7 +231,7 @@ parseDate :: String -> UTCTime
 parseDate = parseTimeOrError True defaultTimeLocale "%b %e, %Y"
 
 rfc3339 :: Maybe String
-rfc3339 = Just "%H:%M:SZ"
+rfc3339 = Just "%H:%M:%SZ"
 
 toIsoDate :: UTCTime -> String
 toIsoDate = formatTime defaultTimeLocale (iso8601DateFormat rfc3339)
