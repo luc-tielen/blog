@@ -211,6 +211,11 @@ copyStaticFiles = do
   void $ forP filepaths $ \filepath ->
     copyFileChanged ("site" </> filepath) (outputFolder </> filepath)
 
+-- Copy the robots.txt to the correct location
+copyRobotsTxt :: Action ()
+copyRobotsTxt = do
+  copyFileChanged "./site/robots.txt" (outputFolder </> "robots.txt")
+
 class HasDate a where
   date :: a -> String
 
@@ -270,6 +275,7 @@ buildRules = do
   buildFeed allPosts  -- TODO add videos?
   buildAbout
   copyStaticFiles
+  copyRobotsTxt
 
 mdToHTML :: T.Text -> Action Value
 mdToHTML txt = do
