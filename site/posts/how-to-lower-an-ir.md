@@ -1,7 +1,7 @@
 ---
 title: How to lower an IR?
 author: Luc Tielen
-postDate: Apr 30, 2022
+postDate: May 17, 2022
 tags:
   - compilers
   - haskell
@@ -31,24 +31,29 @@ end up with an IR simple enough to be compiled down to the assembly level.
 ## Writing a lowering pass
 
 With the introduction out of the way, we can now start writing an actual
-compiler lowering pass. Let's first create 2 IRs:
+compiler lowering pass. Let's first create 2 simple IRs:
 
 ```haskell
--- variables, control flow (if), ..., * and +
+-- IR1 is a calculator-like language that only supports addition
 data IR1
+  = Number Int
+  | Plus IR1 IR1
 
--- IR2: stack based language / BF
+example :: IR1
+example =
+   Number 31 `Plus` Number 10 `Plus` Number 1
+
+-- IR2 is a stack-based language
 data IR2
-
-TODO explanation about the IRs, what is different about them etc
-mention recursive trees, AST
-example:
-  - simple calculator language, lowering * to +? or multiple chained + to ASM?
-  - try to keep it simple and straight forward
+  = Block [IR2]
+  | Push Int
+  | Add
 ```
 
-With the IRs out of the way, we can now implement our pass. In Haskell, the
-simplest type signature for a pass would look like this:
+The IRs are kept simple to prevent this article from exploding in size, but they
+are complex enough to show the ideas behind lowering an IR. With the IRs out of
+the way, we can now implement our pass. In Haskell, the simplest type signature
+for a pass would look like this:
 
 ```haskell
 loweringPass :: IR1 -> IR2
@@ -89,18 +94,103 @@ This might seem a little abstract right now, so let's see what it would look
 like for the 2 IRs defined earlier!
 
 ```haskell
--- How to actually define an IR is out of scope for this post.
-TODO
-actual implementation
-add comments in between
-check if text below still matches
-TODO rewrite (+ add more text, or as comments in the code):
+-- NOTE: Since our example is so trivial, we could simply implement
+-- it like below. This simple implementation might be useful to keep
+-- in the back while going through the second approach:
+
+lowerSimple :: IR1 -> IR2
+lowerSimple = \case
+  Number x ->
+    Push x
+  Plus x y ->
+    Block [lowerSimple x, lowerSimple y, Add]
+
+-- For a more complex/realistic scenario this won't be enough,
+-- so let's apply the strategy discussed previously:
+
+-- in Codegen.hs:
+
+import Control.Monad.State
+import qualified Data.DList as DList
+import Data.DList (DList)
+
+-- First we define a Monad that keeps track of emitted instructions
+-- during lowering.
+newtype CodegenM a
+  = CodegenM (State (DList IR2) a)
+  deriving (Functor, Applicative, Monad, MonadState (DList IR2))
+  via State (DList IR2)
+
+-- This executes the monadic action, and returns the final internal state.
+runLower :: CodegenM a -> [IR2]
+runLower (CodegenM m) =
+  DList.toList $ execState m mempty
+
+-- A helper function to emit an instruction
+emitInstr :: IR2 -> CodegenM ()
+emitInstr instr =
+  modify (\instrs -> DList.snoc instrs instr)
+  -- OR: modify (flip DList.snoc instr)
+
+-- And helper functions for the push and add instructions:
+
+push :: Int -> CodegenM ()
+push x =
+  emitInstr $ Push x
+
+add :: CodegenM ()
+add =
+  emitInstr $ Add
+
+-- and now we can implemnent the lowering pass in Lower.hs:
+
+loweringPass :: IR1 -> IR2
+loweringPass ir1 =
+  Block $ runLower (go ir1)
+  where
+    go = \case
+      Number x ->
+        push x
+      Plus x y -> do
+        -- NOTE: compared to `lowerSimple`, we no longer need to emit an
+        -- additional `Block` in this case.
+        go x
+        go y
+        add
 ```
 
-Lower.hs now contains a monadic function `loweringPass :: IR1 -> CodegenM IR2`
+`Lower.hs` now contains a monadic function `loweringPass :: IR1 -> CodegenM IR2`
 that does a pattern match and recursively handles all cases of the IR on a high
 level, while all details are handled by the `CodegenM` monad and combinators.
 This is close to what we initially wanted to write!
+
+We can quickly check to see if the lowering pass works:
+
+```haskell
+-- A quick-and-dirty interpreter for the stack-based language:
+interpret :: IR2 -> Int
+interpret prog =
+  execState (go prog) [] !! resultIndex
+  where
+    resultIndex = 0
+    go = \case
+      Block instrs ->
+        traverse_ go instrs
+      Push x ->
+        modify (x:)
+      Add ->
+        modify $ \(x:y:rest) -> ((x + y) : rest)
+
+main :: IO ()
+main = do
+  -- The next line prints: "Block [Block [Push 31,Push 10,Add],Push 1,Add]"
+  print $ lowerSimple example
+  -- The following line outputs: "Block [Push 31,Push 10,Add,Push 1,Add]"
+  print $ loweringPass example
+  -- And the final 2 lines print "42".
+  print $ interpret $ lower example
+  print $ interpret $ loweringPass example
+```
 
 Besides the approach I described so far, here are some final tips that also make
 writing lowering passes much easier.
@@ -108,19 +198,26 @@ writing lowering passes much easier.
 1. Don't try to cram everything into one pass. Splitting up a transformation in
    two (or more) parts can be a great way to reduce complexity, increase
    maintainability and improve testability.
-2. The `recursion-schemes` library in Haskell can help with structuring many
-   moving parts of a lowering pass (though it comes with a steep learning
-   curve). My previous blogpost showed how to
+2. The `recursion-schemes` library in Haskell can help with structuring the many
+   moving parts of a lowering pass (though it comes with a learning curve). My
+   previous blogpost showed how to
    [create recursion-schemes using comonads](../create_recursion_schemes_using_comonads/),
-   which I ended up using in some of my compiler's passes.
+   which I ended up using in several of my compiler's passes.
 
 ## Conclusion
 
 In this post, I explained how I structure my compiler to transform one
 intermediary format to another format. By using a two-module approach, the
 internal details stay separate from the high logic, giving a clear overview of
-what the transformation is doing. Even though transforming an IR is always
-different, this general technique should always be applicable.
+what the transformation is doing. Even though transforming an IR always results
+in different challenges, this general technique should always be applicable.
 
-If you have any questions or thoughts about this article, let me know on
+You can find some more complex examples in my Eclair Datalog compiler
+[here](https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/EIR)
+and [here](https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/RA)
+(look for the `Codegen.hs` and `Lower.hs` modules). Note that these examples are
+much more complicated than the toy example presented in this post, as is usually
+the case with compilers :sweat_smile:.
+
+If you have any questions or thoughts about this topic, let me know on
 [Twitter](https://twitter.com/luctielen).
