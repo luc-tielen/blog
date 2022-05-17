@@ -2,12 +2,155 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2022-05-04T09:04:11Z</updated>
+  <updated>2022-05-17T19:46:57Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
   <id>https://luctielen.com/</id>
 
+  <entry>
+      <title>How to lower an IR?</title>
+      <link href="https://luctielen.com/posts/how-to-lower-an-ir"/>
+      <id>https://luctielen.com/posts/how-to-lower-an-ir</id>
+      <updated>2022-05-17T00:00:00Z</updated>
+      <category term="compilers"/>
+      <category term="haskell"/>
+      <summary></summary>
+      <content type="html"><![CDATA[<p>In today's article, I show the approach I use when writing a compiler to lower one intermediary representation into another. I will be using Haskell to explain how to do it, but this technique can be used in other languages as well (with some minor modifications). Since this is a very general and broad topic, it will be hard at times to go into specifics but I will try to mention the key things that are applicable every time.</p>
+<h2 id="so-what-is-lowering-anyway">So what is "lowering" anyway?</h2>
+<p>Before we dive into the code, let's first take a look at what a typical compiler looks like. In essence, a compiler reads in one or more files, parses them and transforms the contents into executable code. This transformation often ends up being quite involved and is performed in multiple steps to manage the overall complexity. A single one of these steps is often called a (lowering) pass.</p>
+<p>Between each step of the compilation process, a different IR or intermediary representation is used to gradually remove high level features and describe them in terms of lower level features. Do this enough times, and eventually you will end up with an IR simple enough to be compiled down to the assembly level.</p>
+<h2 id="writing-a-lowering-pass">Writing a lowering pass</h2>
+<p>With the introduction out of the way, we can now start writing an actual compiler lowering pass. Let's first create 2 simple IRs:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">-- IR1 is a calculator-like language that only supports addition</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">data</span> <span class="dt">IR1</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="ot">=</span> <span class="dt">Number</span> <span class="dt">Int</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a>  <span class="op">|</span> <span class="dt">Plus</span> <span class="dt">IR1</span> <span class="dt">IR1</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="ot">example ::</span> <span class="dt">IR1</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a>example <span class="ot">=</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a>   <span class="dt">Number</span> <span class="dv">31</span> <span class="ot">`Plus`</span> <span class="dt">Number</span> <span class="dv">10</span> <span class="ot">`Plus`</span> <span class="dt">Number</span> <span class="dv">1</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a></span>
+<span id="cb1-10"><a href="#cb1-10"></a><span class="co">-- IR2 is a stack-based language</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="kw">data</span> <span class="dt">IR2</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a>  <span class="ot">=</span> <span class="dt">Block</span> [<span class="dt">IR2</span>]</span>
+<span id="cb1-13"><a href="#cb1-13"></a>  <span class="op">|</span> <span class="dt">Push</span> <span class="dt">Int</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a>  <span class="op">|</span> <span class="dt">Add</span></span></code></pre></div>
+<p>The IRs are kept simple to prevent this article from exploding in size, but they are complex enough to show the ideas behind lowering an IR. With the IRs out of the way, we can now implement our pass. In Haskell, the simplest type signature for a pass would look like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="ot">loweringPass ::</span> <span class="dt">IR1</span> <span class="ot">-&gt;</span> <span class="dt">IR2</span></span></code></pre></div>
+<p>This should be easy to implement, right? A function that takes one argument (an intermediary format) and transform it into another format. However, most of the time, there are factors making this much more complicated:</p>
+<ol>
+<li>The IR datastructures tend to be sum types (tagged/discriminated unions) with many different variants, that each need to be processed differently.</li>
+<li>To perform the transformation, you often end up needing a lot of additional information, not immediately available at that point in the IR tree.</li>
+<li>Some of these transformations might require a lot of logic (which might in turn require some internal state to be managed).</li>
+<li>Higher level features in one IR might need to be mapped to a combination of multiple constructs in the lower level IR.</li>
+</ol>
+<p>All these things combined quickly turn that simple function into a complex beast. To deal with this complexity, we need a structured approach. I usually like to split my code into two modules (next to my module defining the IR):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a>$ <span class="ex">tree</span> IR1</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="ex">IR1</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>├── <span class="ex">IR.hs</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>├── <span class="ex">Codegen.hs</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>└── <span class="ex">Lower.hs</span></span></code></pre></div>
+<p><code>Codegen.hs</code> forms a module that contains helper types / functions / combinators for doing the actual code generation. This module usually also defines a <code>CodegenM</code> monad that keeps track of state during the compiler pass. Since all helper functionality is defined in <code>Codegen.hs</code>, <code>Lower.hs</code> contains only the high-level logic to transform one IR into the next.</p>
+<p>This might seem a little abstract right now, so let's see what it would look like for the 2 IRs defined earlier!</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">-- NOTE: Since our example is so trivial, we could simply implement</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="co">-- it like below. This simple implementation might be useful to keep</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co">-- in the back while going through the second approach:</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="ot">lowerSimple ::</span> <span class="dt">IR1</span> <span class="ot">-&gt;</span> <span class="dt">IR2</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>lowerSimple <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a>  <span class="dt">Number</span> x <span class="ot">-&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a>    <span class="dt">Push</span> x</span>
+<span id="cb4-9"><a href="#cb4-9"></a>  <span class="dt">Plus</span> x y <span class="ot">-&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a>    <span class="dt">Block</span> [lowerSimple x, lowerSimple y, <span class="dt">Add</span>]</span>
+<span id="cb4-11"><a href="#cb4-11"></a></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="co">-- For a more complex/realistic scenario this won&#39;t be enough,</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a><span class="co">-- so let&#39;s apply the strategy discussed previously:</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a></span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="co">-- in Codegen.hs:</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="kw">import</span> <span class="dt">Control.Monad.State</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">Data.DList</span> <span class="kw">as</span> <span class="dt">DList</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="kw">import</span> <span class="dt">Data.DList</span> (<span class="dt">DList</span>)</span>
+<span id="cb4-20"><a href="#cb4-20"></a></span>
+<span id="cb4-21"><a href="#cb4-21"></a><span class="co">-- First we define a Monad that keeps track of emitted instructions</span></span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="co">-- during lowering.</span></span>
+<span id="cb4-23"><a href="#cb4-23"></a><span class="kw">newtype</span> <span class="dt">CodegenM</span> a</span>
+<span id="cb4-24"><a href="#cb4-24"></a>  <span class="ot">=</span> <span class="dt">CodegenM</span> (<span class="dt">State</span> (<span class="dt">DList</span> <span class="dt">IR2</span>) a)</span>
+<span id="cb4-25"><a href="#cb4-25"></a>  <span class="kw">deriving</span> (<span class="dt">Functor</span>, <span class="dt">Applicative</span>, <span class="dt">Monad</span>, <span class="dt">MonadState</span> (<span class="dt">DList</span> <span class="dt">IR2</span>))</span>
+<span id="cb4-26"><a href="#cb4-26"></a>  via <span class="dt">State</span> (<span class="dt">DList</span> <span class="dt">IR2</span>)</span>
+<span id="cb4-27"><a href="#cb4-27"></a></span>
+<span id="cb4-28"><a href="#cb4-28"></a><span class="co">-- This executes the monadic action, and returns the final internal state.</span></span>
+<span id="cb4-29"><a href="#cb4-29"></a><span class="ot">runLower ::</span> <span class="dt">CodegenM</span> a <span class="ot">-&gt;</span> [<span class="dt">IR2</span>]</span>
+<span id="cb4-30"><a href="#cb4-30"></a>runLower (<span class="dt">CodegenM</span> m) <span class="ot">=</span></span>
+<span id="cb4-31"><a href="#cb4-31"></a>  DList.toList <span class="op">$</span> execState m <span class="fu">mempty</span></span>
+<span id="cb4-32"><a href="#cb4-32"></a></span>
+<span id="cb4-33"><a href="#cb4-33"></a><span class="co">-- A helper function to emit an instruction</span></span>
+<span id="cb4-34"><a href="#cb4-34"></a><span class="ot">emitInstr ::</span> <span class="dt">IR2</span> <span class="ot">-&gt;</span> <span class="dt">CodegenM</span> ()</span>
+<span id="cb4-35"><a href="#cb4-35"></a>emitInstr instr <span class="ot">=</span></span>
+<span id="cb4-36"><a href="#cb4-36"></a>  modify (\instrs <span class="ot">-&gt;</span> DList.snoc instrs instr)</span>
+<span id="cb4-37"><a href="#cb4-37"></a>  <span class="co">-- OR: modify (flip DList.snoc instr)</span></span>
+<span id="cb4-38"><a href="#cb4-38"></a></span>
+<span id="cb4-39"><a href="#cb4-39"></a><span class="co">-- And helper functions for the push and add instructions:</span></span>
+<span id="cb4-40"><a href="#cb4-40"></a></span>
+<span id="cb4-41"><a href="#cb4-41"></a><span class="ot">push ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">CodegenM</span> ()</span>
+<span id="cb4-42"><a href="#cb4-42"></a>push x <span class="ot">=</span></span>
+<span id="cb4-43"><a href="#cb4-43"></a>  emitInstr <span class="op">$</span> <span class="dt">Push</span> x</span>
+<span id="cb4-44"><a href="#cb4-44"></a></span>
+<span id="cb4-45"><a href="#cb4-45"></a><span class="ot">add ::</span> <span class="dt">CodegenM</span> ()</span>
+<span id="cb4-46"><a href="#cb4-46"></a>add <span class="ot">=</span></span>
+<span id="cb4-47"><a href="#cb4-47"></a>  emitInstr <span class="op">$</span> <span class="dt">Add</span></span>
+<span id="cb4-48"><a href="#cb4-48"></a></span>
+<span id="cb4-49"><a href="#cb4-49"></a><span class="co">-- and now we can implemnent the lowering pass in Lower.hs:</span></span>
+<span id="cb4-50"><a href="#cb4-50"></a></span>
+<span id="cb4-51"><a href="#cb4-51"></a><span class="ot">loweringPass ::</span> <span class="dt">IR1</span> <span class="ot">-&gt;</span> <span class="dt">IR2</span></span>
+<span id="cb4-52"><a href="#cb4-52"></a>loweringPass ir1 <span class="ot">=</span></span>
+<span id="cb4-53"><a href="#cb4-53"></a>  <span class="dt">Block</span> <span class="op">$</span> runLower (go ir1)</span>
+<span id="cb4-54"><a href="#cb4-54"></a>  <span class="kw">where</span></span>
+<span id="cb4-55"><a href="#cb4-55"></a>    go <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb4-56"><a href="#cb4-56"></a>      <span class="dt">Number</span> x <span class="ot">-&gt;</span></span>
+<span id="cb4-57"><a href="#cb4-57"></a>        push x</span>
+<span id="cb4-58"><a href="#cb4-58"></a>      <span class="dt">Plus</span> x y <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb4-59"><a href="#cb4-59"></a>        <span class="co">-- NOTE: compared to `lowerSimple`, we no longer need to emit an</span></span>
+<span id="cb4-60"><a href="#cb4-60"></a>        <span class="co">-- additional `Block` in this case.</span></span>
+<span id="cb4-61"><a href="#cb4-61"></a>        go x</span>
+<span id="cb4-62"><a href="#cb4-62"></a>        go y</span>
+<span id="cb4-63"><a href="#cb4-63"></a>        add</span></code></pre></div>
+<p><code>Lower.hs</code> now contains a monadic function <code>loweringPass :: IR1 -&gt; CodegenM IR2</code> that does a pattern match and recursively handles all cases of the IR on a high level, while all details are handled by the <code>CodegenM</code> monad and combinators. This is close to what we initially wanted to write!</p>
+<p>We can quickly check to see if the lowering pass works:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">-- A quick-and-dirty interpreter for the stack-based language:</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="ot">interpret ::</span> <span class="dt">IR2</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>interpret prog <span class="ot">=</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>  execState (go prog) [] <span class="op">!!</span> resultIndex</span>
+<span id="cb5-5"><a href="#cb5-5"></a>  <span class="kw">where</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a>    resultIndex <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>    go <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>      <span class="dt">Block</span> instrs <span class="ot">-&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>        traverse_ go instrs</span>
+<span id="cb5-10"><a href="#cb5-10"></a>      <span class="dt">Push</span> x <span class="ot">-&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>        modify (x<span class="op">:</span>)</span>
+<span id="cb5-12"><a href="#cb5-12"></a>      <span class="dt">Add</span> <span class="ot">-&gt;</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a>        modify <span class="op">$</span> \(x<span class="op">:</span>y<span class="op">:</span>rest) <span class="ot">-&gt;</span> ((x <span class="op">+</span> y) <span class="op">:</span> rest)</span>
+<span id="cb5-14"><a href="#cb5-14"></a></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb5-16"><a href="#cb5-16"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a>  <span class="co">-- The next line prints: &quot;Block [Block [Push 31,Push 10,Add],Push 1,Add]&quot;</span></span>
+<span id="cb5-18"><a href="#cb5-18"></a>  <span class="fu">print</span> <span class="op">$</span> lowerSimple example</span>
+<span id="cb5-19"><a href="#cb5-19"></a>  <span class="co">-- The following line outputs: &quot;Block [Push 31,Push 10,Add,Push 1,Add]&quot;</span></span>
+<span id="cb5-20"><a href="#cb5-20"></a>  <span class="fu">print</span> <span class="op">$</span> loweringPass example</span>
+<span id="cb5-21"><a href="#cb5-21"></a>  <span class="co">-- And the final 2 lines print &quot;42&quot;.</span></span>
+<span id="cb5-22"><a href="#cb5-22"></a>  <span class="fu">print</span> <span class="op">$</span> interpret <span class="op">$</span> lower example</span>
+<span id="cb5-23"><a href="#cb5-23"></a>  <span class="fu">print</span> <span class="op">$</span> interpret <span class="op">$</span> loweringPass example</span></code></pre></div>
+<p>Besides the approach I described so far, here are some final tips that also make writing lowering passes much easier.</p>
+<ol>
+<li>Don't try to cram everything into one pass. Splitting up a transformation in two (or more) parts can be a great way to reduce complexity, increase maintainability and improve testability.</li>
+<li>The <code>recursion-schemes</code> library in Haskell can help with structuring the many moving parts of a lowering pass (though it comes with a learning curve). My previous blogpost showed how to <a href="../create_recursion_schemes_using_comonads/">create recursion-schemes using comonads</a>, which I ended up using in several of my compiler's passes.</li>
+</ol>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this post, I explained how I structure my compiler to transform one intermediary format to another format. By using a two-module approach, the internal details stay separate from the high logic, giving a clear overview of what the transformation is doing. Even though transforming an IR always results in different challenges, this general technique should always be applicable.</p>
+<p>You can find some more complex examples in my Eclair Datalog compiler <a href="https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/EIR">here</a> and <a href="https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/RA">here</a> (look for the <code>Codegen.hs</code> and <code>Lower.hs</code> modules). Note that these examples are much more complicated than the toy example presented in this post, as is usually the case with compilers <span class="emoji" data-emoji="sweat_smile">😅</span>.</p>
+<p>If you have any questions or thoughts about this topic, let me know on <a href="https://twitter.com/luctielen">Twitter</a>.</p>]]></content>
+  </entry>
   <entry>
       <title>Create recursion-schemes using comonads</title>
       <link href="https://luctielen.com/posts/create_recursion_schemes_using_comonads"/>
