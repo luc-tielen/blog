@@ -148,6 +148,7 @@ loweringPass :: IR1 -> IR2
 loweringPass ir1 =
   Block $ runLower (go ir1)
   where
+    go :: IR1 -> CodegenM ()
     go = \case
       Number x ->
         push x
@@ -159,10 +160,11 @@ loweringPass ir1 =
         add
 ```
 
-`Lower.hs` now contains a monadic function `loweringPass :: IR1 -> CodegenM IR2`
-that does a pattern match and recursively handles all cases of the IR on a high
-level, while all details are handled by the `CodegenM` monad and combinators.
-This is close to what we initially wanted to write!
+`Lower.hs` now contains a function `loweringPass :: IR1 -> IR2` that performs
+the lowering of the IR. It delegates to a monadic `go` function, which does a
+pattern match and recursively handles all cases of the IR on a high level, while
+all details are handled by the `CodegenM` monad and combinators. This is close
+to what we initially wanted to write!
 
 We can quickly check to see if the lowering pass works:
 
