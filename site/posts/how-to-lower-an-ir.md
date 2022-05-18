@@ -266,6 +266,12 @@ _(Thanks to Reddit user `/u/philh` for pointing out this part was missing!)_
 
 ## Final thoughts
 
+In this post, I explained how I structure my compiler to transform one
+intermediary format to another format. By using a two-module approach, the
+internal details stay separate from the high logic, giving a clear overview of
+what the transformation is doing. Even though transforming an IR always results
+in different challenges, this general technique should always be applicable.
+
 Besides the techniques I described in this article, here are some final tips
 that also make writing lowering passes much easier:
 
@@ -277,12 +283,6 @@ that also make writing lowering passes much easier:
    previous blogpost showed how to
    [create recursion-schemes using comonads](../create_recursion_schemes_using_comonads/),
    which I ended up using in several of my compiler's passes.
-
-In this post, I explained how I structure my compiler to transform one
-intermediary format to another format. By using a two-module approach, the
-internal details stay separate from the high logic, giving a clear overview of
-what the transformation is doing. Even though transforming an IR always results
-in different challenges, this general technique should always be applicable.
 
 You can find some more complex examples in my Eclair Datalog compiler
 [here](https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/EIR)
