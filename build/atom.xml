@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2022-05-18T06:47:36Z</updated>
+  <updated>2022-05-18T09:45:43Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -81,8 +81,8 @@
 <span id="cb4-26"><a href="#cb4-26"></a>  via <span class="dt">State</span> (<span class="dt">DList</span> <span class="dt">IR2</span>)</span>
 <span id="cb4-27"><a href="#cb4-27"></a></span>
 <span id="cb4-28"><a href="#cb4-28"></a><span class="co">-- This executes the monadic action, and returns the final internal state.</span></span>
-<span id="cb4-29"><a href="#cb4-29"></a><span class="ot">runLower ::</span> <span class="dt">CodegenM</span> a <span class="ot">-&gt;</span> [<span class="dt">IR2</span>]</span>
-<span id="cb4-30"><a href="#cb4-30"></a>runLower (<span class="dt">CodegenM</span> m) <span class="ot">=</span></span>
+<span id="cb4-29"><a href="#cb4-29"></a><span class="ot">runCodegen ::</span> <span class="dt">CodegenM</span> a <span class="ot">-&gt;</span> [<span class="dt">IR2</span>]</span>
+<span id="cb4-30"><a href="#cb4-30"></a>runCodegen (<span class="dt">CodegenM</span> m) <span class="ot">=</span></span>
 <span id="cb4-31"><a href="#cb4-31"></a>  DList.toList <span class="op">$</span> execState m <span class="fu">mempty</span></span>
 <span id="cb4-32"><a href="#cb4-32"></a></span>
 <span id="cb4-33"><a href="#cb4-33"></a><span class="co">-- A helper function to emit an instruction</span></span>
@@ -105,7 +105,7 @@
 <span id="cb4-50"><a href="#cb4-50"></a></span>
 <span id="cb4-51"><a href="#cb4-51"></a><span class="ot">loweringPass ::</span> <span class="dt">IR1</span> <span class="ot">-&gt;</span> <span class="dt">IR2</span></span>
 <span id="cb4-52"><a href="#cb4-52"></a>loweringPass ir1 <span class="ot">=</span></span>
-<span id="cb4-53"><a href="#cb4-53"></a>  <span class="dt">Block</span> <span class="op">$</span> runLower (go ir1)</span>
+<span id="cb4-53"><a href="#cb4-53"></a>  <span class="dt">Block</span> <span class="op">$</span> runCodegen (go ir1)</span>
 <span id="cb4-54"><a href="#cb4-54"></a>  <span class="kw">where</span></span>
 <span id="cb4-55"><a href="#cb4-55"></a><span class="ot">    go ::</span> <span class="dt">IR1</span> <span class="ot">-&gt;</span> <span class="dt">CodegenM</span> ()</span>
 <span id="cb4-56"><a href="#cb4-56"></a>    go <span class="ot">=</span> \<span class="kw">case</span></span>
@@ -142,12 +142,69 @@
 <span id="cb5-21"><a href="#cb5-21"></a>  <span class="co">-- And the final 2 lines print &quot;42&quot;.</span></span>
 <span id="cb5-22"><a href="#cb5-22"></a>  <span class="fu">print</span> <span class="op">$</span> interpret <span class="op">$</span> lower example</span>
 <span id="cb5-23"><a href="#cb5-23"></a>  <span class="fu">print</span> <span class="op">$</span> interpret <span class="op">$</span> loweringPass example</span></code></pre></div>
-<p>Besides the approach I described so far, here are some final tips that also make writing lowering passes much easier.</p>
+<h2 id="code-generation-of-recursive-structures">Code generation of recursive structures</h2>
+<p>While the previous approach works well enough for this simple example, sometimes you also run into situations where you need to emit recursive structures. With a few tweaks to our previous solution, we can also support this feature in a fairly straight-forward way:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">-- NOTE: There is no need to manage state manage by the monad now,</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="co">-- but in a real example this could still be possible.</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="kw">newtype</span> <span class="dt">CodegenM</span> a</span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="ot">=</span> <span class="dt">CodegenM</span> (<span class="dt">Identity</span> a)</span>
+<span id="cb6-5"><a href="#cb6-5"></a>  <span class="kw">deriving</span> (<span class="dt">Functor</span>, <span class="dt">Applicative</span>, <span class="dt">Monad</span>)</span>
+<span id="cb6-6"><a href="#cb6-6"></a>  via <span class="dt">Identity</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="ot">runCodegen ::</span> <span class="dt">CodegenM</span> a <span class="ot">-&gt;</span> a</span>
+<span id="cb6-9"><a href="#cb6-9"></a>runCodegen (<span class="dt">CodegenM</span> m) <span class="ot">=</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>  runIdentity m</span>
+<span id="cb6-11"><a href="#cb6-11"></a></span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="co">-- A Block can be thought of as the recursive structure in our example.</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="ot">block ::</span> [<span class="dt">CodegenM</span> <span class="dt">IR2</span>] <span class="ot">-&gt;</span> <span class="dt">CodegenM</span> <span class="dt">IR2</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a>block ms <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a>  irNodes <span class="ot">&lt;-</span> <span class="fu">sequence</span> ms</span>
+<span id="cb6-16"><a href="#cb6-16"></a>  <span class="fu">pure</span> <span class="op">$</span> <span class="dt">Block</span> irNodes</span>
+<span id="cb6-17"><a href="#cb6-17"></a></span>
+<span id="cb6-18"><a href="#cb6-18"></a><span class="co">-- If you wanted to, you could even flatten the structure too.</span></span>
+<span id="cb6-19"><a href="#cb6-19"></a><span class="ot">block&#39; ::</span> [<span class="dt">CodegenM</span> <span class="dt">IR2</span>] <span class="ot">-&gt;</span> <span class="dt">CodegenM</span> <span class="dt">IR2</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a>block&#39; ms <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb6-21"><a href="#cb6-21"></a>  irNodes <span class="ot">&lt;-</span> <span class="fu">sequence</span> ms</span>
+<span id="cb6-22"><a href="#cb6-22"></a>  <span class="fu">pure</span> <span class="op">$</span> <span class="dt">Block</span> <span class="op">$</span> <span class="fu">flip</span> <span class="fu">concatMap</span> irNodes <span class="op">$</span> \<span class="kw">case</span></span>
+<span id="cb6-23"><a href="#cb6-23"></a>    <span class="dt">Block</span> instrs <span class="ot">-&gt;</span> instrs</span>
+<span id="cb6-24"><a href="#cb6-24"></a>    instr <span class="ot">-&gt;</span> [instr]</span>
+<span id="cb6-25"><a href="#cb6-25"></a></span>
+<span id="cb6-26"><a href="#cb6-26"></a><span class="co">-- `push` and `add` now return their corresponding IR nodes</span></span>
+<span id="cb6-27"><a href="#cb6-27"></a></span>
+<span id="cb6-28"><a href="#cb6-28"></a><span class="co">-- If needed, you could also use the internal state of the monad</span></span>
+<span id="cb6-29"><a href="#cb6-29"></a><span class="co">-- to do more sophisticated code generation here.</span></span>
+<span id="cb6-30"><a href="#cb6-30"></a></span>
+<span id="cb6-31"><a href="#cb6-31"></a><span class="ot">push ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">CodegenM</span> <span class="dt">IR2</span></span>
+<span id="cb6-32"><a href="#cb6-32"></a>push x <span class="ot">=</span></span>
+<span id="cb6-33"><a href="#cb6-33"></a>  <span class="fu">pure</span> <span class="op">$</span> <span class="dt">Push</span> x</span>
+<span id="cb6-34"><a href="#cb6-34"></a></span>
+<span id="cb6-35"><a href="#cb6-35"></a><span class="ot">add ::</span> <span class="dt">CodegenM</span> <span class="dt">IR2</span></span>
+<span id="cb6-36"><a href="#cb6-36"></a>add <span class="ot">=</span></span>
+<span id="cb6-37"><a href="#cb6-37"></a>  <span class="fu">pure</span> <span class="dt">Add</span></span>
+<span id="cb6-38"><a href="#cb6-38"></a></span>
+<span id="cb6-39"><a href="#cb6-39"></a><span class="ot">loweringPass&#39; ::</span> <span class="dt">IR1</span> <span class="ot">-&gt;</span> <span class="dt">IR2</span></span>
+<span id="cb6-40"><a href="#cb6-40"></a>loweringPass&#39; ir <span class="ot">=</span></span>
+<span id="cb6-41"><a href="#cb6-41"></a>  runCodegen (go ir)</span>
+<span id="cb6-42"><a href="#cb6-42"></a>  <span class="kw">where</span></span>
+<span id="cb6-43"><a href="#cb6-43"></a><span class="ot">    go ::</span> <span class="dt">IR1</span> <span class="ot">-&gt;</span> <span class="dt">CodegenM</span> <span class="dt">IR2</span></span>
+<span id="cb6-44"><a href="#cb6-44"></a>    go <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb6-45"><a href="#cb6-45"></a>      <span class="dt">Number</span> x <span class="ot">-&gt;</span></span>
+<span id="cb6-46"><a href="#cb6-46"></a>        push x</span>
+<span id="cb6-47"><a href="#cb6-47"></a>      <span class="dt">Plus</span> a b <span class="ot">-&gt;</span></span>
+<span id="cb6-48"><a href="#cb6-48"></a>        <span class="co">-- Replace with block&#39; to flatten the IR</span></span>
+<span id="cb6-49"><a href="#cb6-49"></a>        block</span>
+<span id="cb6-50"><a href="#cb6-50"></a>          [ go a</span>
+<span id="cb6-51"><a href="#cb6-51"></a>          , go b</span>
+<span id="cb6-52"><a href="#cb6-52"></a>          , add</span>
+<span id="cb6-53"><a href="#cb6-53"></a>          ]</span></code></pre></div>
+<p>The key idea in the above snippet is how the <code>block</code> combinator works: it takes a list of monadic actions that will return <code>IR2</code> nodes when evaluated. This allows you to perform any effects you need in a controlled way in each of the other combinators that generate IR nodes.</p>
+<p><em>(Thanks to Reddit user <code>/u/philh</code> for pointing out this part was missing!)</em></p>
+<h2 id="final-thoughts">Final thoughts</h2>
+<p>Besides the techniques I described in this article, here are some final tips that also make writing lowering passes much easier:</p>
 <ol>
 <li>Don't try to cram everything into one pass. Splitting up a transformation in two (or more) parts can be a great way to reduce complexity, increase maintainability and improve testability.</li>
 <li>The <code>recursion-schemes</code> library in Haskell can help with structuring the many moving parts of a lowering pass (though it comes with a learning curve). My previous blogpost showed how to <a href="../create_recursion_schemes_using_comonads/">create recursion-schemes using comonads</a>, which I ended up using in several of my compiler's passes.</li>
 </ol>
-<h2 id="conclusion">Conclusion</h2>
 <p>In this post, I explained how I structure my compiler to transform one intermediary format to another format. By using a two-module approach, the internal details stay separate from the high logic, giving a clear overview of what the transformation is doing. Even though transforming an IR always results in different challenges, this general technique should always be applicable.</p>
 <p>You can find some more complex examples in my Eclair Datalog compiler <a href="https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/EIR">here</a> and <a href="https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/RA">here</a> (look for the <code>Codegen.hs</code> and <code>Lower.hs</code> modules). Note that these examples are much more complicated than the toy example presented in this post, as is usually the case with compilers <span class="emoji" data-emoji="sweat_smile">😅</span>.</p>
 <p>If you have any questions or thoughts about this topic, let me know on <a href="https://twitter.com/luctielen">Twitter</a>.</p>]]></content>
