@@ -274,12 +274,12 @@
 <p>The key idea in the above snippet is how the <code>block</code> combinator works: it takes a list of monadic actions that will return <code>IR2</code> nodes when evaluated. This allows you to perform any effects you need in a controlled way in each of the other combinators that generate IR nodes.</p>
 <p><em>(Thanks to Reddit user <code>/u/philh</code> for pointing out this part was missing!)</em></p>
 <h2 id="final-thoughts">Final thoughts</h2>
+<p>In this post, I explained how I structure my compiler to transform one intermediary format to another format. By using a two-module approach, the internal details stay separate from the high logic, giving a clear overview of what the transformation is doing. Even though transforming an IR always results in different challenges, this general technique should always be applicable.</p>
 <p>Besides the techniques I described in this article, here are some final tips that also make writing lowering passes much easier:</p>
 <ol>
 <li>Don't try to cram everything into one pass. Splitting up a transformation in two (or more) parts can be a great way to reduce complexity, increase maintainability and improve testability.</li>
 <li>The <code>recursion-schemes</code> library in Haskell can help with structuring the many moving parts of a lowering pass (though it comes with a learning curve). My previous blogpost showed how to <a href="../create_recursion_schemes_using_comonads/">create recursion-schemes using comonads</a>, which I ended up using in several of my compiler's passes.</li>
 </ol>
-<p>In this post, I explained how I structure my compiler to transform one intermediary format to another format. By using a two-module approach, the internal details stay separate from the high logic, giving a clear overview of what the transformation is doing. Even though transforming an IR always results in different challenges, this general technique should always be applicable.</p>
 <p>You can find some more complex examples in my Eclair Datalog compiler <a href="https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/EIR">here</a> and <a href="https://github.com/luc-tielen/eclair-lang/tree/f51950021715c1eed25dc4b9c747e8326aa4bbc2/lib/Eclair/RA">here</a> (look for the <code>Codegen.hs</code> and <code>Lower.hs</code> modules). Note that these examples are much more complicated than the toy example presented in this post, as is usually the case with compilers <span class="emoji" data-emoji="sweat_smile">😅</span>.</p>
 <p>If you have any questions or thoughts about this topic, let me know on <a href="https://twitter.com/luctielen">Twitter</a>.</p>
   </main>
