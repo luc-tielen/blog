@@ -181,16 +181,17 @@
 <span id="cb4-52"><a href="#cb4-52"></a>loweringPass ir1 <span class="ot">=</span></span>
 <span id="cb4-53"><a href="#cb4-53"></a>  <span class="dt">Block</span> <span class="op">$</span> runLower (go ir1)</span>
 <span id="cb4-54"><a href="#cb4-54"></a>  <span class="kw">where</span></span>
-<span id="cb4-55"><a href="#cb4-55"></a>    go <span class="ot">=</span> \<span class="kw">case</span></span>
-<span id="cb4-56"><a href="#cb4-56"></a>      <span class="dt">Number</span> x <span class="ot">-&gt;</span></span>
-<span id="cb4-57"><a href="#cb4-57"></a>        push x</span>
-<span id="cb4-58"><a href="#cb4-58"></a>      <span class="dt">Plus</span> x y <span class="ot">-&gt;</span> <span class="kw">do</span></span>
-<span id="cb4-59"><a href="#cb4-59"></a>        <span class="co">-- NOTE: compared to `lowerSimple`, we no longer need to emit an</span></span>
-<span id="cb4-60"><a href="#cb4-60"></a>        <span class="co">-- additional `Block` in this case.</span></span>
-<span id="cb4-61"><a href="#cb4-61"></a>        go x</span>
-<span id="cb4-62"><a href="#cb4-62"></a>        go y</span>
-<span id="cb4-63"><a href="#cb4-63"></a>        add</span></code></pre></div>
-<p><code>Lower.hs</code> now contains a monadic function <code>loweringPass :: IR1 -&gt; CodegenM IR2</code> that does a pattern match and recursively handles all cases of the IR on a high level, while all details are handled by the <code>CodegenM</code> monad and combinators. This is close to what we initially wanted to write!</p>
+<span id="cb4-55"><a href="#cb4-55"></a><span class="ot">    go ::</span> <span class="dt">IR1</span> <span class="ot">-&gt;</span> <span class="dt">CodegenM</span> ()</span>
+<span id="cb4-56"><a href="#cb4-56"></a>    go <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb4-57"><a href="#cb4-57"></a>      <span class="dt">Number</span> x <span class="ot">-&gt;</span></span>
+<span id="cb4-58"><a href="#cb4-58"></a>        push x</span>
+<span id="cb4-59"><a href="#cb4-59"></a>      <span class="dt">Plus</span> x y <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb4-60"><a href="#cb4-60"></a>        <span class="co">-- NOTE: compared to `lowerSimple`, we no longer need to emit an</span></span>
+<span id="cb4-61"><a href="#cb4-61"></a>        <span class="co">-- additional `Block` in this case.</span></span>
+<span id="cb4-62"><a href="#cb4-62"></a>        go x</span>
+<span id="cb4-63"><a href="#cb4-63"></a>        go y</span>
+<span id="cb4-64"><a href="#cb4-64"></a>        add</span></code></pre></div>
+<p><code>Lower.hs</code> now contains a function <code>loweringPass :: IR1 -&gt; IR2</code> that performs the lowering of the IR. It delegates to a monadic <code>go</code> function, which does a pattern match and recursively handles all cases of the IR on a high level, while all details are handled by the <code>CodegenM</code> monad and combinators. This is close to what we initially wanted to write!</p>
 <p>We can quickly check to see if the lowering pass works:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">-- A quick-and-dirty interpreter for the stack-based language:</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="ot">interpret ::</span> <span class="dt">IR2</span> <span class="ot">-&gt;</span> <span class="dt">Int</span></span>
