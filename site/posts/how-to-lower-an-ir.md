@@ -122,8 +122,8 @@ newtype CodegenM a
   via State (DList IR2)
 
 -- This executes the monadic action, and returns the final internal state.
-runLower :: CodegenM a -> [IR2]
-runLower (CodegenM m) =
+runCodegen :: CodegenM a -> [IR2]
+runCodegen (CodegenM m) =
   DList.toList $ execState m mempty
 
 -- A helper function to emit an instruction
@@ -146,7 +146,7 @@ add =
 
 loweringPass :: IR1 -> IR2
 loweringPass ir1 =
-  Block $ runLower (go ir1)
+  Block $ runCodegen (go ir1)
   where
     go :: IR1 -> CodegenM ()
     go = \case
@@ -194,8 +194,80 @@ main = do
   print $ interpret $ loweringPass example
 ```
 
-Besides the approach I described so far, here are some final tips that also make
-writing lowering passes much easier.
+## Code generation of recursive structures
+
+While the previous approach works well enough for this simple example, sometimes
+you also run into situations where you need to emit recursive structures. With a
+few tweaks to our previous solution, we can also support this feature in a fairly
+straight-forward way:
+
+```haskell
+-- NOTE: There is no need to manage state manage by the monad now,
+-- but in a real example this could still be possible.
+newtype CodegenM a
+  = CodegenM (Identity a)
+  deriving (Functor, Applicative, Monad)
+  via Identity
+
+runCodegen :: CodegenM a -> a
+runCodegen (CodegenM m) =
+  runIdentity m
+
+-- A Block can be thought of as the recursive structure in our example.
+block :: [CodegenM IR2] -> CodegenM IR2
+block ms = do
+  irNodes <- sequence ms
+  pure $ Block irNodes
+
+-- If you wanted to, you could even flatten the structure too.
+block' :: [CodegenM IR2] -> CodegenM IR2
+block' ms = do
+  irNodes <- sequence ms
+  pure $ Block $ flip concatMap irNodes $ \case
+    Block instrs -> instrs
+    instr -> [instr]
+
+-- `push` and `add` now return their corresponding IR nodes
+
+-- If needed, you could also use the internal state of the monad
+-- to do more sophisticated code generation here.
+
+push :: Int -> CodegenM IR2
+push x =
+  pure $ Push x
+
+add :: CodegenM IR2
+add =
+  pure Add
+
+loweringPass' :: IR1 -> IR2
+loweringPass' ir =
+  runCodegen (go ir)
+  where
+    go :: IR1 -> CodegenM IR2
+    go = \case
+      Number x ->
+        push x
+      Plus a b ->
+        -- Replace with block' to flatten the IR
+        block
+          [ go a
+          , go b
+          , add
+          ]
+```
+
+The key idea in the above snippet is how the `block` combinator works: it takes
+a list of monadic actions that will return `IR2` nodes when evaluated. This
+allows you to perform any effects you need in a controlled way in each of the
+other combinators that generate IR nodes.
+
+_(Thanks to Reddit user `/u/philh` for pointing out this part was missing!)_
+
+## Final thoughts
+
+Besides the techniques I described in this article, here are some final tips
+that also make writing lowering passes much easier:
 
 1. Don't try to cram everything into one pass. Splitting up a transformation in
    two (or more) parts can be a great way to reduce complexity, increase
@@ -205,8 +277,6 @@ writing lowering passes much easier.
    previous blogpost showed how to
    [create recursion-schemes using comonads](../create_recursion_schemes_using_comonads/),
    which I ended up using in several of my compiler's passes.
-
-## Conclusion
 
 In this post, I explained how I structure my compiler to transform one
 intermediary format to another format. By using a two-module approach, the
