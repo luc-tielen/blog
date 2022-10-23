@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="FP -&gt; Compilers -&gt; Logic -&gt; Blog">
+    <meta name="author" content="Luc Tielen">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="A guide for writing fact extractors for Datalog">
+    <meta name="twitter:description" content="">
+    <meta name="twitter:image" content="https://luctielen.com/images/guide_for_writing_fact_extractors.png">
+    <title>A guide for writing fact extractors for Datalog</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <script defer data-domain="luctielen.com" src="https://plausible.io/js/plausible.js"></script>
+  </head>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/videos">Videos</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://twitter.com/luctielen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+        >
+          <path
+            d="M16 3.538a6.461 6.461 0 01-1.884.516 3.301 3.301 0 001.444-1.816 6.607 6.607 0 01-2.084.797 3.28 3.28 0 00-2.397-1.034 3.28 3.28 0 00-3.197 4.028 9.321 9.321 0 01-6.766-3.431 3.284 3.284 0 001.015 4.381A3.301 3.301 0 01.643 6.57v.041A3.283 3.283 0 003.277 9.83a3.291 3.291 0 01-1.485.057 3.293 3.293 0 003.066 2.281 6.586 6.586 0 01-4.862 1.359 9.286 9.286 0 005.034 1.475c6.037 0 9.341-5.003 9.341-9.341 0-.144-.003-.284-.009-.425a6.59 6.59 0 001.637-1.697z"
+          />
+        </svg>
+      </a>
+       
+      <a href="https://github.com/luc-tielen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+        >
+          <path
+            d="M8 .198a8 8 0 00-2.529 15.591c.4.074.547-.174.547-.385 0-.191-.008-.821-.011-1.489-2.226.484-2.695-.944-2.695-.944-.364-.925-.888-1.171-.888-1.171-.726-.497.055-.486.055-.486.803.056 1.226.824 1.226.824.714 1.223 1.872.869 2.328.665.072-.517.279-.87.508-1.07-1.777-.202-3.645-.888-3.645-3.954 0-.873.313-1.587.824-2.147-.083-.202-.357-1.015.077-2.117 0 0 .672-.215 2.201.82A7.672 7.672 0 018 4.066c.68.003 1.365.092 2.004.269 1.527-1.035 2.198-.82 2.198-.82.435 1.102.162 1.916.079 2.117.513.56.823 1.274.823 2.147 0 3.073-1.872 3.749-3.653 3.947.287.248.543.735.543 1.481 0 1.07-.009 1.932-.009 2.195 0 .213.144.462.55.384A8 8 0 008.001.196z"
+          />
+        </svg>
+      </a>
+       
+      <a href="https://www.youtube.com/channel/UCeMz1NwTQlkhQvIFYMZoAJQ">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
+          />
+        </svg>
+      </a>
+      <a href="/atom.xml">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+          >
+            <path
+              d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"
+            />
+          </svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="post">
+    <h1>A guide for writing fact extractors for Datalog</h1>
+    <!--
+    <span class="date"></span>
+    -->
+    <div class="tags">
+      <span class="tag tag-datalog"><a href="/tag/datalog">datalog</a></span>
+    </div>
+    <img class="post-image" src="/images/guide_for_writing_fact_extractors.png"/>
+    <p>Today's post is a guide on how you can prepare and model a dataset in a straight-forward and scalable way for use in Datalog. As you will see, most things are not all that different compared to how you model data in SQL, but sometimes there's a little twist involved. Let's dive in!</p>
+<h2 id="create-a-dedicated-fact-extractor">Create a dedicated "fact extractor"</h2>
+<p>Datalog can be a powerful tool when you need to work with deeply connected data, but most Datalog implementations require the data to be in a specific format (Datalog facts). This means that you will need to write a so-called "fact extractor" that extracts Datalog facts from your starting dataset.</p>
+<p>The extractor can be a direct part of a larger application, or it can be a completely separate application that focuses only on processing data. This will most likely depend on a couple of things:</p>
+<ol>
+<li>Do you need a specialized tool or library only available in a certain language?</li>
+<li>Can the data be stored or cached somewhere in between fact extraction and the actual processing in Datalog?</li>
+<li>Are there performance requirements that need to be met?</li>
+<li>Any other application requirements?</li>
+</ol>
+<p>A separate fact extractor is more flexible since you can use any language / tool to extract the facts, but in general it's best to write the extractor in the same language as the main application (if possible). This reduces the amount of overhead other developers will have working with your Datalog-powered app or library.</p>
+<h2 id="keep-your-fact-extractor-simple">Keep your fact extractor simple</h2>
+<p>While staying on the topic of mental overhead, keep your fact extractor as simple as possible! Only put as much logic in the extractor as you need for generating the Datalog facts. As long as the essential data is in there, Datalog could always be used to compute other, more complex derived data.</p>
+<p>Doing this means you will most likely only need to change the extractor rarely, and you can focus on the more important logic written in Datalog.</p>
+<h2 id="extract-everything">Extract <em>everything</em></h2>
+<p>When trying to first analyze a dataset, it's not always clear what exactly you are looking for. For this reason, you should extract as much useful information as possible from the data. This gives you the freedom to experiment and iterate on a solution in Datalog. If you find at some later point you are generating data that isn't being used, then you can always remove it again from the extractor code.</p>
+<h2 id="one-type-of-information--one-fact-type">One type of information = one fact type</h2>
+<p>You should create a new type of fact for each distinct part of information in your original dataset (just like you would in SQL). This will make it trivial to transform the original source data into Datalog facts.</p>
+<p>And just like in SQL, it's advised to add a unique identifier to each type of fact. This will make it easy to refer to a specific fact value in Datalog queries. A unique ID can be as simple as an integer value in the extractor that is incremented after each emitted fact.</p>
+<p>A simple example of this would be a fact for storing information about a person. A combination of first and last name might not be unique, but by adding a "id" column, we could distinguish that they are different people.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode datalog"><code class="sourceCode datalog"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">.decl</span> person<span class="cn">(</span>id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> age<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> first_name<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">,</span> last_name<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span></code></pre></div>
+<p>A unique ID is not only useful for referring to values: if you are using Datalog embedded in another language, it will also make it easy to retrieve certain information by ID from Datalog back into the host language.</p>
+<h2 id="link-your-data-using-unique-ids">Link your data using unique IDs</h2>
+<p>If you followed the advice from the previous section, all your main fact types should now have unique identifiers. Besides your main fact types, it can be valuable to create facts for relations between the data. And because we have assigned unique IDs to each of them, this makes it easy to link the different parts of data together.</p>
+<p>The term "relation" can be thought of in a very broad way here. It could be e.g. the posts made by a user on a blog, or if you have a value that contains many other values. This can be useful for some Datalogs where you don't have support for lists of variable length.</p>
+<p>An example of this is for example during program analysis where you want to analyze a program and you would encode parts of the program as Datalog facts. Here's how you could encode a small program containing a function call:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="at">myFunction</span>(<span class="dv">123</span><span class="op">,</span> <span class="st">&quot;abc&quot;</span>)<span class="op">;</span></span></code></pre></div>
+<p>This could be translated to the following Datalog code:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode datalog"><code class="sourceCode datalog"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">.decl</span> function_call<span class="cn">(</span>id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> name<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">.decl</span> literal_number<span class="cn">(</span>id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> value<span class="cn">:</span> <span class="dt">number</span><span class="cn">)</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">.decl</span> literal_string<span class="cn">(</span>id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> value<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">// Here we link an argument in the function call to the actual function call:</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">.decl</span> function_call_argument<span class="cn">(</span>function_call_id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a>                             argument_position<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> value_id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">)</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a></span>
+<span id="cb3-8"><a href="#cb3-8"></a>function_call<span class="cn">(</span><span class="dv">0</span><span class="cn">,</span> <span class="st">&quot;myFunction&quot;</span><span class="cn">).</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a>literal_number<span class="cn">(</span><span class="dv">1</span><span class="cn">,</span> <span class="dv">123</span><span class="cn">).</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>literal_string<span class="cn">(</span><span class="dv">2</span><span class="cn">,</span> <span class="st">&quot;abc&quot;</span><span class="cn">).</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>function_call_argument<span class="cn">(</span><span class="dv">0</span><span class="cn">,</span> <span class="dv">0</span><span class="cn">,</span> <span class="dv">1</span><span class="cn">).</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>function_call_argument<span class="cn">(</span><span class="dv">0</span><span class="cn">,</span> <span class="dv">1</span><span class="cn">,</span> <span class="dv">2</span><span class="cn">).</span></span></code></pre></div>
+<p>In the snippet above, a fact type was created for both of the literal types, and for function calls. A helper fact type was also created that links the function arguments to a specific function call via the unique identifier.</p>
+<h2 id="optimize-the-fact-generation-only-if-you-need-to">Optimize the fact generation only if you need to</h2>
+<p>When working with a dataset for some time, you might notice certain access patterns of data that are done many times in a Datalog analysis. If these patterns contribute to a significant portion of the total analysis time, you might consider changing the extractor to emit additional specialized facts for this purpose.</p>
+<p>Note that this should only be used as a last resort when you already optimized your Datalog code, since this technique can quickly introduce a lot of complexity in the extractor. In general, it's better to keep the extractor simple (as mentioned earlier)!</p>
+<h2 id="build-logic-on-top-of-the-generated-facts">Build logic on top of the generated facts</h2>
+<p>When you finish writing your fact extractor, you are now ready to start using the data in Datalog! If you followed all the previous steps, you should have a good basis for writing complex queries and logic on top of all these facts!</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article, I gave some recommendations how you can prepare and model your data for analysis in Datalog. If you want to see a "real world" example where these suggestions are being used, take a look at the <a href="https://github.com/luc-tielen/eclair-lang/blob/main/cbits/semantic_analysis.dl#L1-L12">semantic analysis in my Eclair compiler</a>.</p>
+<p>If you think I missed any important steps in this guide, let me know! I will add a section credited to you. <span class="emoji" data-emoji="smile">😄</span></p>
+<p>If you are interested in more content like this, follow me on <a href="https://twitter.com/luctielen">Twitter</a>. Feel free to contact me if you have any questions or comments about this topic.</p>
+  </main>
+</body>

@@ -2,12 +2,70 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2022-05-18T09:47:29Z</updated>
+  <updated>2022-10-23T12:27:17Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
   <id>https://luctielen.com/</id>
 
+  <entry>
+      <title>A guide for writing fact extractors for Datalog</title>
+      <link href="https://luctielen.com/posts/guide_for_writing_datalog_fact_extractors"/>
+      <id>https://luctielen.com/posts/guide_for_writing_datalog_fact_extractors</id>
+      <updated>2022-10-23T00:00:00Z</updated>
+      <category term="datalog"/>
+      <summary></summary>
+      <content type="html"><![CDATA[<p>Today's post is a guide on how you can prepare and model a dataset in a straight-forward and scalable way for use in Datalog. As you will see, most things are not all that different compared to how you model data in SQL, but sometimes there's a little twist involved. Let's dive in!</p>
+<h2 id="create-a-dedicated-fact-extractor">Create a dedicated "fact extractor"</h2>
+<p>Datalog can be a powerful tool when you need to work with deeply connected data, but most Datalog implementations require the data to be in a specific format (Datalog facts). This means that you will need to write a so-called "fact extractor" that extracts Datalog facts from your starting dataset.</p>
+<p>The extractor can be a direct part of a larger application, or it can be a completely separate application that focuses only on processing data. This will most likely depend on a couple of things:</p>
+<ol>
+<li>Do you need a specialized tool or library only available in a certain language?</li>
+<li>Can the data be stored or cached somewhere in between fact extraction and the actual processing in Datalog?</li>
+<li>Are there performance requirements that need to be met?</li>
+<li>Any other application requirements?</li>
+</ol>
+<p>A separate fact extractor is more flexible since you can use any language / tool to extract the facts, but in general it's best to write the extractor in the same language as the main application (if possible). This reduces the amount of overhead other developers will have working with your Datalog-powered app or library.</p>
+<h2 id="keep-your-fact-extractor-simple">Keep your fact extractor simple</h2>
+<p>While staying on the topic of mental overhead, keep your fact extractor as simple as possible! Only put as much logic in the extractor as you need for generating the Datalog facts. As long as the essential data is in there, Datalog could always be used to compute other, more complex derived data.</p>
+<p>Doing this means you will most likely only need to change the extractor rarely, and you can focus on the more important logic written in Datalog.</p>
+<h2 id="extract-everything">Extract <em>everything</em></h2>
+<p>When trying to first analyze a dataset, it's not always clear what exactly you are looking for. For this reason, you should extract as much useful information as possible from the data. This gives you the freedom to experiment and iterate on a solution in Datalog. If you find at some later point you are generating data that isn't being used, then you can always remove it again from the extractor code.</p>
+<h2 id="one-type-of-information--one-fact-type">One type of information = one fact type</h2>
+<p>You should create a new type of fact for each distinct part of information in your original dataset (just like you would in SQL). This will make it trivial to transform the original source data into Datalog facts.</p>
+<p>And just like in SQL, it's advised to add a unique identifier to each type of fact. This will make it easy to refer to a specific fact value in Datalog queries. A unique ID can be as simple as an integer value in the extractor that is incremented after each emitted fact.</p>
+<p>A simple example of this would be a fact for storing information about a person. A combination of first and last name might not be unique, but by adding a "id" column, we could distinguish that they are different people.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode datalog"><code class="sourceCode datalog"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">.decl</span> person<span class="cn">(</span>id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> age<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> first_name<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">,</span> last_name<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span></code></pre></div>
+<p>A unique ID is not only useful for referring to values: if you are using Datalog embedded in another language, it will also make it easy to retrieve certain information by ID from Datalog back into the host language.</p>
+<h2 id="link-your-data-using-unique-ids">Link your data using unique IDs</h2>
+<p>If you followed the advice from the previous section, all your main fact types should now have unique identifiers. Besides your main fact types, it can be valuable to create facts for relations between the data. And because we have assigned unique IDs to each of them, this makes it easy to link the different parts of data together.</p>
+<p>The term "relation" can be thought of in a very broad way here. It could be e.g. the posts made by a user on a blog, or if you have a value that contains many other values. This can be useful for some Datalogs where you don't have support for lists of variable length.</p>
+<p>An example of this is for example during program analysis where you want to analyze a program and you would encode parts of the program as Datalog facts. Here's how you could encode a small program containing a function call:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1"></a><span class="at">myFunction</span>(<span class="dv">123</span><span class="op">,</span> <span class="st">&quot;abc&quot;</span>)<span class="op">;</span></span></code></pre></div>
+<p>This could be translated to the following Datalog code:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode datalog"><code class="sourceCode datalog"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">.decl</span> function_call<span class="cn">(</span>id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> name<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">.decl</span> literal_number<span class="cn">(</span>id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> value<span class="cn">:</span> <span class="dt">number</span><span class="cn">)</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">.decl</span> literal_string<span class="cn">(</span>id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> value<span class="cn">:</span> <span class="dt">symbol</span><span class="cn">)</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">// Here we link an argument in the function call to the actual function call:</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">.decl</span> function_call_argument<span class="cn">(</span>function_call_id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a>                             argument_position<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">,</span> value_id<span class="cn">:</span> <span class="dt">unsigned</span><span class="cn">)</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a></span>
+<span id="cb3-8"><a href="#cb3-8"></a>function_call<span class="cn">(</span><span class="dv">0</span><span class="cn">,</span> <span class="st">&quot;myFunction&quot;</span><span class="cn">).</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a>literal_number<span class="cn">(</span><span class="dv">1</span><span class="cn">,</span> <span class="dv">123</span><span class="cn">).</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>literal_string<span class="cn">(</span><span class="dv">2</span><span class="cn">,</span> <span class="st">&quot;abc&quot;</span><span class="cn">).</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a>function_call_argument<span class="cn">(</span><span class="dv">0</span><span class="cn">,</span> <span class="dv">0</span><span class="cn">,</span> <span class="dv">1</span><span class="cn">).</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>function_call_argument<span class="cn">(</span><span class="dv">0</span><span class="cn">,</span> <span class="dv">1</span><span class="cn">,</span> <span class="dv">2</span><span class="cn">).</span></span></code></pre></div>
+<p>In the snippet above, a fact type was created for both of the literal types, and for function calls. A helper fact type was also created that links the function arguments to a specific function call via the unique identifier.</p>
+<h2 id="optimize-the-fact-generation-only-if-you-need-to">Optimize the fact generation only if you need to</h2>
+<p>When working with a dataset for some time, you might notice certain access patterns of data that are done many times in a Datalog analysis. If these patterns contribute to a significant portion of the total analysis time, you might consider changing the extractor to emit additional specialized facts for this purpose.</p>
+<p>Note that this should only be used as a last resort when you already optimized your Datalog code, since this technique can quickly introduce a lot of complexity in the extractor. In general, it's better to keep the extractor simple (as mentioned earlier)!</p>
+<h2 id="build-logic-on-top-of-the-generated-facts">Build logic on top of the generated facts</h2>
+<p>When you finish writing your fact extractor, you are now ready to start using the data in Datalog! If you followed all the previous steps, you should have a good basis for writing complex queries and logic on top of all these facts!</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article, I gave some recommendations how you can prepare and model your data for analysis in Datalog. If you want to see a "real world" example where these suggestions are being used, take a look at the <a href="https://github.com/luc-tielen/eclair-lang/blob/main/cbits/semantic_analysis.dl#L1-L12">semantic analysis in my Eclair compiler</a>.</p>
+<p>If you think I missed any important steps in this guide, let me know! I will add a section credited to you. <span class="emoji" data-emoji="smile">😄</span></p>
+<p>If you are interested in more content like this, follow me on <a href="https://twitter.com/luctielen">Twitter</a>. Feel free to contact me if you have any questions or comments about this topic.</p>]]></content>
+  </entry>
   <entry>
       <title>How to lower an IR?</title>
       <link href="https://luctielen.com/posts/how-to-lower-an-ir"/>
