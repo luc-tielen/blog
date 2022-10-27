@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="FP -&gt; Compilers -&gt; Logic -&gt; Blog">
+    <meta name="author" content="Luc Tielen">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="Template metaprogramming in LLVM with Haskell">
+    <meta name="twitter:description" content="">
+    <meta name="twitter:image" content="https://luctielen.com/images/template_metaprogramming_llvm.png">
+    <title>Template metaprogramming in LLVM with Haskell</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <script defer data-domain="luctielen.com" src="https://plausible.io/js/plausible.js"></script>
+  </head>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/videos">Videos</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://twitter.com/luctielen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+        >
+          <path
+            d="M16 3.538a6.461 6.461 0 01-1.884.516 3.301 3.301 0 001.444-1.816 6.607 6.607 0 01-2.084.797 3.28 3.28 0 00-2.397-1.034 3.28 3.28 0 00-3.197 4.028 9.321 9.321 0 01-6.766-3.431 3.284 3.284 0 001.015 4.381A3.301 3.301 0 01.643 6.57v.041A3.283 3.283 0 003.277 9.83a3.291 3.291 0 01-1.485.057 3.293 3.293 0 003.066 2.281 6.586 6.586 0 01-4.862 1.359 9.286 9.286 0 005.034 1.475c6.037 0 9.341-5.003 9.341-9.341 0-.144-.003-.284-.009-.425a6.59 6.59 0 001.637-1.697z"
+          />
+        </svg>
+      </a>
+       
+      <a href="https://github.com/luc-tielen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+        >
+          <path
+            d="M8 .198a8 8 0 00-2.529 15.591c.4.074.547-.174.547-.385 0-.191-.008-.821-.011-1.489-2.226.484-2.695-.944-2.695-.944-.364-.925-.888-1.171-.888-1.171-.726-.497.055-.486.055-.486.803.056 1.226.824 1.226.824.714 1.223 1.872.869 2.328.665.072-.517.279-.87.508-1.07-1.777-.202-3.645-.888-3.645-3.954 0-.873.313-1.587.824-2.147-.083-.202-.357-1.015.077-2.117 0 0 .672-.215 2.201.82A7.672 7.672 0 018 4.066c.68.003 1.365.092 2.004.269 1.527-1.035 2.198-.82 2.198-.82.435 1.102.162 1.916.079 2.117.513.56.823 1.274.823 2.147 0 3.073-1.872 3.749-3.653 3.947.287.248.543.735.543 1.481 0 1.07-.009 1.932-.009 2.195 0 .213.144.462.55.384A8 8 0 008.001.196z"
+          />
+        </svg>
+      </a>
+       
+      <a href="https://www.youtube.com/channel/UCeMz1NwTQlkhQvIFYMZoAJQ">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
+          />
+        </svg>
+      </a>
+      <a href="/atom.xml">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+          >
+            <path
+              d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"
+            />
+          </svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="post">
+    <h1>Template metaprogramming in LLVM with Haskell</h1>
+    <!--
+    <span class="date"></span>
+    -->
+    <div class="tags">
+      <span class="tag tag-haskell"><a href="/tag/haskell">haskell</a></span>
+      <span class="tag tag-llvm"><a href="/tag/llvm">llvm</a></span>
+      <span class="tag tag-c++"><a href="/tag/c++">c++</a></span>
+    </div>
+    <img class="post-image" src="/images/template_metaprogramming_llvm.png"/>
+    <p>In today's article, I show how a single monad transformer can be used to gain template metaprogramming capabilities à la C++ when generating LLVM code in Haskell. I will be assuming that you are using either the <a href="https://github.com/luc-tielen/llvm-codegen.git">llvm-codegen</a> or the <a href="https://hackage.haskell.org/package/llvm-hs-pure">llvm-hs-pure</a> library (both have an almost identical API) and that you are a little familiar with monad transformers.</p>
+<h2 id="what-is-a-template-anyway">What is a template anyway?</h2>
+<p>Before we dive straight into the Haskell code, let's first take a look at (some pseudo-code of) C++ templates to understand what they are and why they are so powerful.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">class</span> set {</span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="dt">void</span> add(T value) {</span>
+<span id="cb1-4"><a href="#cb1-4"></a>    <span class="co">// code to add a value to the set</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>  }</span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a>  <span class="dt">bool</span> contains(T value) {</span>
+<span id="cb1-8"><a href="#cb1-8"></a>    <span class="co">// code to check if the set contains a value</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>  }</span>
+<span id="cb1-10"><a href="#cb1-10"></a></span>
+<span id="cb1-11"><a href="#cb1-11"></a>  <span class="co">// many other fields and methods ...</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a>}</span></code></pre></div>
+<p>The snippet above is a simplified example of a C++ template that represents a set of values. The actual type of the values inside the set is not specified here (it can be any type). Because of this, a template by itself can't be used directly in code, you first need to <em>instantiate</em> the parameters of the template with certain types or values. This will cause the compiler to "stamp" out code according to what is defined in the template, but with all the template parameters replaced with concrete types or values.</p>
+<p>Templates form a great way to write generic code in C++ and at the same time they are a great way for writing performant code since all information is specialized and inlined for a specific usecase.</p>
+<p>However, templates are not available if you are working directly with a low level assembly language such as LLVM. But can we somehow gain the potential to do this by using a combination of LLVM and Haskell? Let's find out!</p>
+<h2 id="a-conceptual-look-at-templates">A conceptual look at templates</h2>
+<p>If we take a step back and look at the functionality of templates, they do the following things:</p>
+<ol>
+<li>Templates can generate code (types and functions);</li>
+<li>They do this based on certain template parameters;</li>
+<li>The names of the generated functions need to be unique to avoid collisions (C++ does this automatically via <em>"name mangling"</em>);</li>
+<li>Templates can be created in other locations (files) as where they are instantiated.</li>
+</ol>
+<p>In summary: given some suffix and template params <code>p</code>, an instantiated template will output generated LLVM IR code. This definition leads us to a first version of what a template is:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">type</span> <span class="dt">Suffix</span> <span class="ot">=</span> <span class="dt">Text</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="ot">template ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">Suffix</span> <span class="ot">-&gt;</span> p <span class="ot">-&gt;</span> <span class="dt">ModuleBuilderT</span> m a</span></code></pre></div>
+<p>Some notes about this encoding:</p>
+<ol>
+<li><code>ModuleBuilderT</code> is a monad transformer used in the <code>llvm-codegen</code> and <code>llvm-hs-pure</code> libraries for generating LLVM types and functions.</li>
+<li>The type variable <code>a</code> represents the actual output; this can be one or more functions or types.</li>
+<li>Unlike C++ templates, we need to provide a suffix ourselves. I actually consider this a benefit, since it gives more control over the generated code. (Though you do need to watch out for naming collisions.)</li>
+<li>C++ only allows types and a few other primitive types as template parameters, but in this variant every possible Haskell value is allowed!</li>
+</ol>
+<h2 id="iterating-on-our-first-attempt">Iterating on our first attempt</h2>
+<p>While this encoding would work, it would certainly get tedious very fast to be manually passing functions around. Luckily, Haskell already has a solution for this: the <code>Reader</code> monad! Let's rewrite our previous example as a monad, and while we're at it, turn it into a MTL-compatible monad transformer:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">type</span> <span class="dt">Suffix</span> <span class="ot">=</span> <span class="dt">Text</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">-- The type variable &#39;m&#39; allows using this in a pure context with Identity as</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">-- the base monad, or in a effectful stack on top of IO.</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">newtype</span> <span class="dt">TemplateT</span> p m a</span>
+<span id="cb3-6"><a href="#cb3-6"></a>  <span class="ot">=</span> <span class="dt">TemplateT</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>  {<span class="ot"> unTemplateT ::</span> <span class="dt">ReaderT</span> (<span class="dt">Suffix</span>, p) (<span class="dt">ModuleBuilderT</span> m) a</span>
+<span id="cb3-8"><a href="#cb3-8"></a>  } <span class="kw">deriving</span> ( <span class="dt">Functor</span>, <span class="dt">Applicative</span>, <span class="dt">Monad</span>, <span class="dt">MonadFix</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a>             , <span class="dt">MonadIO</span>, <span class="dt">MonadError</span> e, <span class="dt">MonadState</span> s, <span class="dt">MonadModuleBuilder</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>             )</span>
+<span id="cb3-11"><a href="#cb3-11"></a>  via <span class="dt">ReaderT</span> (<span class="dt">Suffix</span>, p) (<span class="dt">ModuleBuilderT</span> m)</span>
+<span id="cb3-12"><a href="#cb3-12"></a></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="kw">type</span> <span class="dt">Template</span> p <span class="ot">=</span> <span class="dt">TemplateT</span> p <span class="dt">Identity</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="co">-- MFunctor is from the `mmorph` package.</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="kw">instance</span> <span class="dt">MFunctor</span> (<span class="dt">TemplateT</span> p) <span class="kw">where</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a>  hoist f <span class="ot">=</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a>    <span class="dt">TemplateT</span> <span class="op">.</span> hoist (hoist f) <span class="op">.</span> unTemplateT</span>
+<span id="cb3-19"><a href="#cb3-19"></a></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="kw">instance</span> <span class="dt">MonadReader</span> r m <span class="ot">=&gt;</span> <span class="dt">MonadReader</span> r (<span class="dt">TemplateT</span> p m) <span class="kw">where</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>  ask <span class="ot">=</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a>    lift ask</span>
+<span id="cb3-23"><a href="#cb3-23"></a></span>
+<span id="cb3-24"><a href="#cb3-24"></a>  local f (<span class="dt">TemplateT</span> m) <span class="ot">=</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a>    <span class="dt">TemplateT</span> <span class="op">$</span> hoist (local f) m</span>
+<span id="cb3-26"><a href="#cb3-26"></a></span>
+<span id="cb3-27"><a href="#cb3-27"></a><span class="kw">instance</span> <span class="dt">MonadTrans</span> (<span class="dt">TemplateT</span> p) <span class="kw">where</span></span>
+<span id="cb3-28"><a href="#cb3-28"></a>  lift m <span class="ot">=</span></span>
+<span id="cb3-29"><a href="#cb3-29"></a>    <span class="dt">TemplateT</span> <span class="op">$</span> <span class="dt">ReaderT</span> <span class="op">$</span> <span class="fu">const</span> <span class="op">$</span> lift m</span></code></pre></div>
+<p>With the power of <code>DerivingVia</code>, we managed to quickly derive many of the standard MTL instances. We even added support for <code>MonadModuleBuilder</code> defined in the Haskell LLVM libraries I mentioned earlier. For <code>MonadReader</code> we need to put in a little more effort, but with hole driven development and the <code>hoist</code> function we can find the above implementation.</p>
+<p>We can also add typeclasses to easily access the suffix and template params in a monad transformer stack. I left out the usual "MTL boilerplate" in this article, but you can find the complete code <a href="https://github.com/luc-tielen/eclair-lang/blob/main/lib/Eclair/LLVM/Template.hs">here</a>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">class</span> <span class="dt">HasSuffix</span> m <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="ot">  getSuffix ::</span> m <span class="dt">Suffix</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="kw">instance</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">HasSuffix</span> (<span class="dt">TemplateT</span> p m) <span class="kw">where</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>  getSuffix <span class="ot">=</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>    <span class="dt">TemplateT</span> <span class="op">$</span> asks ((<span class="st">&quot;_&quot;</span> <span class="op">&lt;&gt;</span>) <span class="op">.</span> <span class="fu">fst</span>)</span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="kw">class</span> <span class="dt">MonadTemplate</span> p m <span class="op">|</span> m <span class="ot">-&gt;</span> p <span class="kw">where</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="ot">  getParams ::</span> m p</span>
+<span id="cb4-10"><a href="#cb4-10"></a></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="kw">instance</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">MonadTemplate</span> p (<span class="dt">TemplateT</span> p m) <span class="kw">where</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a>  getParams <span class="ot">=</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a>    <span class="dt">TemplateT</span> <span class="op">$</span> asks <span class="fu">snd</span></span></code></pre></div>
+<p>Now that we have defined this new monad transformer and typeclasses, we can also create helper functions for using these templates in the rest of our code. Let's start with <code>cmapParams</code>, a function to transform the type of the template parameters type. This is a nice little utility to make a template of one type "fit into" another template (remember, we're still working with monads in Haskell).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">-- It would be nice to create a Contravariant instance, but the</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="co">-- kind of TemplateT doesn&#39;t match..</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="ot">cmapParams ::</span> (p2 <span class="ot">-&gt;</span> p1) <span class="ot">-&gt;</span> <span class="dt">TemplateT</span> p1 m a <span class="ot">-&gt;</span> <span class="dt">TemplateT</span> p2 m a</span>
+<span id="cb5-4"><a href="#cb5-4"></a>cmapParams f (<span class="dt">TemplateT</span> m) <span class="ot">=</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>  <span class="dt">TemplateT</span> <span class="op">$</span> <span class="fu">flip</span> withReaderT m <span class="op">$</span> second f</span></code></pre></div>
+<p>Next up is instantiation of a template to generate actual LLVM instructions. With our encoding this ends up being trivial, all we need to do is "evaluate" the <code>TemplateT</code> part of the monad transformer stack, giving us back the underlying <code>ModuleBuilderT</code> action:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">instantiate ::</span> <span class="dt">Suffix</span> <span class="ot">-&gt;</span> p <span class="ot">-&gt;</span> <span class="dt">TemplateT</span> p m a <span class="ot">-&gt;</span> <span class="dt">ModuleBuilderT</span> m a</span>
+<span id="cb6-2"><a href="#cb6-2"></a>instantiate suffix p (<span class="dt">TemplateT</span> m) <span class="ot">=</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>  runReaderT m (suffix, p)</span></code></pre></div>
+<p>A useful variation on this is "partial instantiation":</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">-- This instantiates a template and wraps it up again as part of another template.</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="ot">partialInstantiate ::</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> p1 <span class="ot">-&gt;</span> <span class="dt">TemplateT</span> p1 m a <span class="ot">-&gt;</span> <span class="dt">TemplateT</span> p2 m a</span>
+<span id="cb7-3"><a href="#cb7-3"></a>partialInstantiate p t <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>  suffix <span class="ot">&lt;-</span> getSuffix</span>
+<span id="cb7-5"><a href="#cb7-5"></a>  embedIntoOtherTemplate <span class="op">$</span> instantiate suffix p t</span>
+<span id="cb7-6"><a href="#cb7-6"></a>  <span class="kw">where</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>    <span class="co">-- This embeds a plain ModuleBuilderT action into a template.</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a>    <span class="co">-- This action has no access to the actual template params</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="co">-- from this point onwards.</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="ot">    embedIntoOtherTemplate ::</span> <span class="dt">ModuleBuilderT</span> m a <span class="ot">-&gt;</span> <span class="dt">TemplateT</span> p m a</span>
+<span id="cb7-11"><a href="#cb7-11"></a>    embedIntoOtherTemplate m <span class="ot">=</span> <span class="dt">TemplateT</span> <span class="op">$</span> <span class="dt">ReaderT</span> <span class="op">$</span> <span class="fu">const</span> m</span></code></pre></div>
+<p>This is convenient if you have a template that generates types and/or functions, but you want to defer further specialization up to a later point (e.g. a templated class that contains templated member functions). As a quick side note, this function is the reason I had to go down this whole rabbit-hole. I needed this functionality <a href="https://github.com/luc-tielen/eclair-lang/blob/290b57f5e67ec134c5006841b83a5a4bd8349a49/lib/Eclair/LLVM/BTree.hs#L958">somewhere in the Eclair runtime</a>.</p>
+<p>The final two helper functions we need are enhanced versions of <code>function</code> and <code>typedef</code>. These functions already exist in the <code>llvm-codegen</code> / <code>llvm-hs-pure</code> libraries and allow you to define new functions and types respectively, but they don't automatically take the template suffix into account yet.</p>
+<p>We can work around this by hiding the original functions and exporting similarly named functions with (almost) the same type signature. This let's us automatically add a suffix via the <code>HasSuffix</code> type class:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">import</span> <span class="dt">LLVM.Codegen</span> <span class="kw">hiding</span> (function, typedef)</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">import</span> <span class="kw">qualified</span> <span class="dt">LLVM.Codegen</span> <span class="kw">as</span> <span class="dt">CG</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a></span>
+<span id="cb8-4"><a href="#cb8-4"></a></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="ot">function ::</span> (<span class="dt">MonadModuleBuilder</span> m, <span class="dt">HasSuffix</span> m)</span>
+<span id="cb8-6"><a href="#cb8-6"></a>         <span class="ot">=&gt;</span> <span class="dt">Name</span> <span class="ot">-&gt;</span> [(<span class="dt">Type</span>, <span class="dt">ParameterName</span>)] <span class="ot">-&gt;</span> <span class="dt">Type</span> <span class="ot">-&gt;</span> ([<span class="dt">Operand</span>] <span class="ot">-&gt;</span> <span class="dt">IRBuilderT</span> m a) <span class="ot">-&gt;</span> m <span class="dt">Operand</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>function (<span class="dt">Name</span> name) args retTy body <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a>  suffix <span class="ot">&lt;-</span> getSuffix</span>
+<span id="cb8-9"><a href="#cb8-9"></a>  <span class="kw">let</span> nameWithSuffix <span class="ot">=</span> <span class="dt">Name</span> <span class="op">$</span> name <span class="op">&lt;&gt;</span> suffix</span>
+<span id="cb8-10"><a href="#cb8-10"></a>  CG.function nameWithSuffix args retTy body</span>
+<span id="cb8-11"><a href="#cb8-11"></a></span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="ot">typedef ::</span> (<span class="dt">MonadModuleBuilder</span> m, <span class="dt">HasSuffix</span> m)</span>
+<span id="cb8-13"><a href="#cb8-13"></a>        <span class="ot">=&gt;</span> <span class="dt">Name</span> <span class="ot">-&gt;</span> <span class="dt">Flag</span> <span class="dt">Packed</span> <span class="ot">-&gt;</span> [<span class="dt">Type</span>] <span class="ot">-&gt;</span> m <span class="dt">Type</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a>typedef (<span class="dt">Name</span> name) packedFlag tys <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a>  suffix <span class="ot">&lt;-</span> getSuffix</span>
+<span id="cb8-16"><a href="#cb8-16"></a>  <span class="kw">let</span> nameWithSuffix <span class="ot">=</span> <span class="dt">Name</span> <span class="op">$</span> name <span class="op">&lt;&gt;</span> suffix</span>
+<span id="cb8-17"><a href="#cb8-17"></a>  CG.typedef nameWithSuffix packedFlag tys</span></code></pre></div>
+<p>And with that we have all we need to generate LLVM IR using templates!</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this post, I showed how you can use a single monad transformer to gain template metaprogramming capabilities when generating LLVM IR. The full code for for the LLVM templates can be found <a href="https://github.com/luc-tielen/eclair-lang/blob/main/lib/Eclair/LLVM/Template.hs">here</a>. To see it being used in action, you can look <a href="https://github.com/luc-tielen/eclair-lang/blob/290b57f5e67ec134c5006841b83a5a4bd8349a49/lib/Eclair/EIR/Lower.hs#L242">here</a> and <a href="https://github.com/luc-tielen/eclair-lang/blob/290b57f5e67ec134c5006841b83a5a4bd8349a49/lib/Eclair/LLVM/Vector.hs">here</a> for a couple more examples.</p>
+<p>You could further extend this idea by introducing a caching mechanism so that instantiations with the same template parameters return the same code, but I left that out of scope for this post.</p>
+<p>If you are interested in more content like this, follow me on <a href="https://twitter.com/luctielen">Twitter</a>. Feel free to contact me if you have any questions or comments about this topic.</p>
+  </main>
+</body>
