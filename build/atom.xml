@@ -2,12 +2,134 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2022-10-27T11:04:35Z</updated>
+  <updated>2022-12-04T19:48:03Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
   <id>https://luctielen.com/</id>
 
+  <entry>
+      <title>Lessons learned compiling to WebAssembly</title>
+      <link href="https://luctielen.com/posts/lessons_learned_compiling_to_webassembly"/>
+      <id>https://luctielen.com/posts/lessons_learned_compiling_to_webassembly</id>
+      <updated>2022-12-04T00:00:00Z</updated>
+      <category term="wasm"/>
+      <category term="llvm"/>
+      <summary></summary>
+      <content type="html"><![CDATA[<p>In today's post I list some of the lessons I learned when compiling to WebAssembly using LLVM for <a href="https://github.com/luc-tielen/eclair-lang">Eclair Datalog</a>. It is true that LLVM has direct support for WebAssembly, but as you will see, for some things some extra effort is needed to get the language fully working on top of WASM.</p>
+<h2 id="there-is-more-than-one-webassembly-target">There is more than one WebAssembly target</h2>
+<p>LLVM can compile to multiple different WebAssembly targets. There's <code>wasm32-unknown-unknown</code> (also referenced as just <code>wasm32</code> sometimes), <code>wasm32-wasi</code>, <code>wasm64-unknown-unknown</code>, ...</p>
+<p>For Eclair, I ended up choosing the minimal <code>wasm32</code>. It's a compilation target that is very bare-bones which makes it portable and lightweight to run (tiny executables!), but it does have some implications as we will see in the next section.</p>
+<p>Compiling to WASM is straight-forward using LLVM. Assuming your language can already compile to LLVM, you can use the following commands to compile to WebAssembly:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># This assumes the language already generated program.ll</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="co"># Note: llc is also possible instead of clang</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>$ <span class="fu">clang</span> -Oz --target=wasm32 -nostdlib -c -o program.o program.ll</span>
+<span id="cb1-4"><a href="#cb1-4"></a>$ <span class="ex">wasm-ld</span> --no-entry --import-memory -o program program.o</span></code></pre></div>
+<h2 id="system-calls-require-extra-work">System-calls require extra work</h2>
+<p>LLVM gives you low-level instructions to do operations such as addition, multiplication, ... But most languages provide more high-level functionality than just these basic instructions. Think of allocating memory, network access via sockets, ... In traditional native environments, this is made possible via so-called system-calls (or <code>syscalls</code>) that interact with the OS-kernel. WebAssembly has no direct access to the kernel, so if you need the behavior of a syscall, you might have to implement it yourself and expose it to the WASM runtime!</p>
+<p>If your language relies on many different syscalls, it might be best to target the <code>wasm32-wasi</code> environment. This compilation target includes a WASM-counterpart for many of the traditional syscalls, but it comes at the cost of larger executables.</p>
+<p>Luckily though, Eclair relies on only a handful of syscalls because of its pure and declarative nature. Here's the full list:</p>
+<ol>
+<li><code>malloc</code></li>
+<li><code>free</code></li>
+<li><code>memcpy</code></li>
+<li><code>memset</code></li>
+<li><code>memcmp</code></li>
+</ol>
+<p>Since I chose the <code>wasm32</code> target, I had to provide implementations for all of these. I will briefly go over how I did this in the next sections.</p>
+<h3 id="malloc-and-free">malloc and free</h3>
+<p>The <code>malloc</code> and <code>free</code> syscalls are used for allocating memory in an application. Writing good, performant allocators is not an easy task, so I decided to depend on the open source <a href="https://github.com/wingo/walloc">walloc</a> library for implementations of <code>malloc</code> and <code>free</code>. Other allocators are possible too, as long as they support the WASM target you are trying to support!</p>
+<p>The compile commands earlier change a little when you add an allocator in the mix. If you want to use <code>walloc</code>, this becomes:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># This assumes the language already generated program.ll</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>$ <span class="fu">clang</span> -Oz --target=wasm32 -nostdlib -c -o program.o program.ll</span>
+<span id="cb2-3"><a href="#cb2-3"></a>$ <span class="fu">clang</span> -DNDEBUG -Oz --target=wasm32 -nostdlib -c -o walloc.o walloc.c</span>
+<span id="cb2-4"><a href="#cb2-4"></a>$ <span class="ex">wasm-ld</span> --no-entry --import-memory -o program program.o walloc.o</span></code></pre></div>
+<h3 id="memcpy-and-memset">memcpy and memset</h3>
+<p><code>memcpy</code> and <code>memset</code> were the easiest syscalls. If you pass <code>-mbulk-memory</code> to <code>llc</code> or <code>clang</code>, you get optimized implementations for these two functions for free. Nice!</p>
+<h3 id="memcmp">memcmp</h3>
+<p><code>memcmp</code> is the last of the five syscalls, used to compare two chunks of memory against each other (e.g. when comparing strings). Strangely enough, <code>-mbulk-memory</code> doesn't give you an implementation for <code>memcmp</code>, so this syscall I really had to write myself. The LLVM snippet below is a possible implementation that uses some loop unrolling (so bytes are compared in groups of eight at a time, not one-by-one):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode llvm"><code class="sourceCode llvm"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">define</span> external <span class="kw">ccc</span> <span class="dt">i32</span> <span class="fu">@memcmp_wasm32</span>(<span class="dt">i8</span>* <span class="fu">%array1</span>, <span class="dt">i8</span>* <span class="fu">%array2</span>, <span class="dt">i64</span> <span class="fu">%byte_count</span>) {</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">start:</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="co">;; Calculate how many i64 fit in the array.</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>  <span class="fu">%0</span> = <span class="kw">udiv</span> <span class="dt">i64</span> <span class="fu">%byte_count</span>, <span class="dv">8</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>  <span class="fu">%1</span> = <span class="kw">and</span> <span class="dt">i64</span> <span class="fu">%byte_count</span>, <span class="dv">7</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a>  <span class="fu">%2</span> = <span class="kw">bitcast</span> <span class="dt">i8</span>* <span class="fu">%array1</span> <span class="kw">to</span> <span class="dt">i64</span>*</span>
+<span id="cb3-7"><a href="#cb3-7"></a>  <span class="fu">%3</span> = <span class="kw">bitcast</span> <span class="dt">i8</span>* <span class="fu">%array2</span> <span class="kw">to</span> <span class="dt">i64</span>*</span>
+<span id="cb3-8"><a href="#cb3-8"></a>  <span class="kw">br</span> <span class="dt">label</span> <span class="fu">%for_begin_0</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="fu">for_begin_0:</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>  <span class="fu">%4</span> = <span class="kw">phi</span> <span class="dt">i64</span> [<span class="dv">0</span>, <span class="fu">%start</span>], [<span class="fu">%11</span>, <span class="fu">%end_if_0</span>]</span>
+<span id="cb3-11"><a href="#cb3-11"></a>  <span class="fu">%5</span> = <span class="kw">icmp</span> <span class="kw">ult</span> <span class="dt">i64</span> <span class="fu">%4</span>, <span class="fu">%0</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>  <span class="kw">br</span> <span class="dt">i1</span> <span class="fu">%5</span>, <span class="dt">label</span> <span class="fu">%for_body_0</span>, <span class="dt">label</span> <span class="fu">%for_end_0</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="fu">for_body_0:</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>  <span class="co">;; Compare i64 values, return 1 if they are not equal</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>  <span class="fu">%6</span> = <span class="kw">getelementptr</span> <span class="dt">i64</span>, <span class="dt">i64</span>* <span class="fu">%2</span>, <span class="dt">i64</span> <span class="fu">%4</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a>  <span class="fu">%7</span> = <span class="kw">getelementptr</span> <span class="dt">i64</span>, <span class="dt">i64</span>* <span class="fu">%3</span>, <span class="dt">i64</span> <span class="fu">%4</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a>  <span class="fu">%8</span> = <span class="kw">load</span> <span class="dt">i64</span>, <span class="dt">i64</span>* <span class="fu">%6</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a>  <span class="fu">%9</span> = <span class="kw">load</span> <span class="dt">i64</span>, <span class="dt">i64</span>* <span class="fu">%7</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a>  <span class="fu">%10</span> = <span class="kw">icmp</span> <span class="kw">ne</span> <span class="dt">i64</span> <span class="fu">%8</span>, <span class="fu">%9</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a>  <span class="kw">br</span> <span class="dt">i1</span> <span class="fu">%10</span>, <span class="dt">label</span> <span class="fu">%if_0</span>, <span class="dt">label</span> <span class="fu">%end_if_0</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="fu">if_0:</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a>  <span class="kw">ret</span> <span class="dt">i32</span> <span class="dv">1</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a><span class="fu">end_if_0:</span></span>
+<span id="cb3-24"><a href="#cb3-24"></a>  <span class="fu">%11</span> = <span class="kw">add</span> <span class="dt">i64</span> <span class="dv">1</span>, <span class="fu">%4</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a>  <span class="kw">br</span> <span class="dt">label</span> <span class="fu">%for_begin_0</span></span>
+<span id="cb3-26"><a href="#cb3-26"></a><span class="fu">for_end_0:</span></span>
+<span id="cb3-27"><a href="#cb3-27"></a>  <span class="fu">%12</span> = <span class="kw">mul</span> <span class="dt">i64</span> <span class="fu">%0</span>, <span class="dv">8</span></span>
+<span id="cb3-28"><a href="#cb3-28"></a>  <span class="kw">br</span> <span class="dt">label</span> <span class="fu">%for_begin_1</span></span>
+<span id="cb3-29"><a href="#cb3-29"></a><span class="fu">for_begin_1:</span></span>
+<span id="cb3-30"><a href="#cb3-30"></a>  <span class="fu">%13</span> = <span class="kw">phi</span> <span class="dt">i64</span> [<span class="dv">0</span>, <span class="fu">%for_end_0</span>], [<span class="fu">%21</span>, <span class="fu">%end_if_1</span>]</span>
+<span id="cb3-31"><a href="#cb3-31"></a>  <span class="fu">%14</span> = <span class="kw">icmp</span> <span class="kw">ult</span> <span class="dt">i64</span> <span class="fu">%13</span>, <span class="fu">%1</span></span>
+<span id="cb3-32"><a href="#cb3-32"></a>  <span class="kw">br</span> <span class="dt">i1</span> <span class="fu">%14</span>, <span class="dt">label</span> <span class="fu">%for_body_1</span>, <span class="dt">label</span> <span class="fu">%for_end_1</span></span>
+<span id="cb3-33"><a href="#cb3-33"></a><span class="fu">for_body_1:</span></span>
+<span id="cb3-34"><a href="#cb3-34"></a>  <span class="co">;; The last few elements of the array needs to be checked byte-per-byte</span></span>
+<span id="cb3-35"><a href="#cb3-35"></a>  <span class="fu">%15</span> = <span class="kw">add</span> <span class="dt">i64</span> <span class="fu">%13</span>, <span class="fu">%12</span></span>
+<span id="cb3-36"><a href="#cb3-36"></a>  <span class="fu">%16</span> = <span class="kw">getelementptr</span> <span class="dt">i8</span>, <span class="dt">i8</span>* <span class="fu">%array1</span>, <span class="dt">i64</span> <span class="fu">%15</span></span>
+<span id="cb3-37"><a href="#cb3-37"></a>  <span class="fu">%17</span> = <span class="kw">getelementptr</span> <span class="dt">i8</span>, <span class="dt">i8</span>* <span class="fu">%array2</span>, <span class="dt">i64</span> <span class="fu">%15</span></span>
+<span id="cb3-38"><a href="#cb3-38"></a>  <span class="fu">%18</span> = <span class="kw">load</span> <span class="dt">i8</span>, <span class="dt">i8</span>* <span class="fu">%16</span></span>
+<span id="cb3-39"><a href="#cb3-39"></a>  <span class="fu">%19</span> = <span class="kw">load</span> <span class="dt">i8</span>, <span class="dt">i8</span>* <span class="fu">%17</span></span>
+<span id="cb3-40"><a href="#cb3-40"></a>  <span class="fu">%20</span> = <span class="kw">icmp</span> <span class="kw">ne</span> <span class="dt">i8</span> <span class="fu">%18</span>, <span class="fu">%19</span></span>
+<span id="cb3-41"><a href="#cb3-41"></a>  <span class="kw">br</span> <span class="dt">i1</span> <span class="fu">%20</span>, <span class="dt">label</span> <span class="fu">%if_1</span>, <span class="dt">label</span> <span class="fu">%end_if_1</span></span>
+<span id="cb3-42"><a href="#cb3-42"></a><span class="fu">if_1:</span></span>
+<span id="cb3-43"><a href="#cb3-43"></a>  <span class="kw">ret</span> <span class="dt">i32</span> <span class="dv">1</span></span>
+<span id="cb3-44"><a href="#cb3-44"></a><span class="fu">end_if_1:</span></span>
+<span id="cb3-45"><a href="#cb3-45"></a>  <span class="fu">%21</span> = <span class="kw">add</span> <span class="dt">i64</span> <span class="dv">1</span>, <span class="fu">%13</span></span>
+<span id="cb3-46"><a href="#cb3-46"></a>  <span class="kw">br</span> <span class="dt">label</span> <span class="fu">%for_begin_1</span></span>
+<span id="cb3-47"><a href="#cb3-47"></a><span class="fu">for_end_1:</span></span>
+<span id="cb3-48"><a href="#cb3-48"></a>  <span class="kw">ret</span> <span class="dt">i32</span> <span class="dv">0</span></span>
+<span id="cb3-49"><a href="#cb3-49"></a>}</span></code></pre></div>
+<p>One final thing to note here is that this <code>memcmp</code> function is slightly different than the usual implementation, since it returns <code>0</code> if the arrays are equal, and <code>1</code> otherwise. That's the freedom you get if you need to build your own syscall. <span class="emoji" data-emoji="wink">😉</span></p>
+<h2 id="allocate-enough-memory-before-running-the-code">Allocate enough memory before running the code</h2>
+<p>WASM is different compared to most language runtimes in that you need to specify how much memory you actually allow to be used. Here's how this is usually done:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">// This tells WASM to start with 10 pages = 640kB of memory, allow up to 6400kB</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">const</span> wasmCode <span class="op">=</span> ...</span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">const</span> memory <span class="op">=</span> <span class="kw">new</span> <span class="va">WebAssembly</span>.<span class="at">Memory</span>(<span class="op">{</span> <span class="dt">initial</span><span class="op">:</span> <span class="dv">10</span><span class="op">,</span> <span class="dt">maximum</span><span class="op">:</span> <span class="dv">100</span> <span class="op">}</span>)<span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="kw">const</span> <span class="op">{</span> <span class="dt">instance</span><span class="op">:</span> wasmInstance <span class="op">}</span> <span class="op">=</span> <span class="cf">await</span> <span class="va">WebAssembly</span>.<span class="at">instantiateStreaming</span>(</span>
+<span id="cb4-5"><a href="#cb4-5"></a>  wasmCode<span class="op">,</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>  <span class="op">{</span> <span class="dt">env</span><span class="op">:</span> <span class="op">{</span> memory <span class="op">}</span> <span class="op">}</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a>)<span class="op">;</span></span></code></pre></div>
+<p>This has a big impact on your language's runtime code! If we take a look at a traditional snippet of C code using <code>malloc</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1"></a><span class="dt">void</span> func() {</span>
+<span id="cb5-2"><a href="#cb5-2"></a>  <span class="dt">uint8_t</span>* memory = (<span class="dt">uint8_t</span>*) malloc(<span class="dv">10000</span>);</span>
+<span id="cb5-3"><a href="#cb5-3"></a>  <span class="co">// code that uses the allocated memory ...</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>}</span></code></pre></div>
+<p>If <code>malloc</code> fails to allocate enough memory, it will return a <code>NULL</code> pointer. So be sure to always allocate enough memory to the WASM runtime, and check that the memory allocation succeeded.</p>
+<h2 id="invalid-programs-are-harder-to-detect">Invalid programs are harder to detect</h2>
+<p>While we're on the topic of failing programs, bugs can be harder to detect in WASM because there's not a clear segmentation fault or crash like in C. The code will try to continue running, which might leave the entire runtime in a corrupt state.</p>
+<p>On top of that, the previously mentioned <code>NULL</code>-pointer is actually a valid address in WASM, which might lead to data being written to the wrong places.</p>
+<p>As you can imagine, these kinds of errors can be really hard to track down.. <span class="emoji" data-emoji="sweat_smile">😅</span></p>
+<h2 id="thoroughly-test-your-language-before-porting">Thoroughly test your language before porting</h2>
+<p>Before you try to port your language's runtime to WASM, it should already be well-tested for another platform. This will make it much easier to port over and add new code, since you can rely on the behavior of the existing code. Potential issues should only pop up in the WASM-specific portions of the runtime. And ofcourse add tests for the new WASM runtime too!</p>
+<h2 id="make-sure-you-are-compiling-for-the-correct-target">Make sure you are compiling for the correct target</h2>
+<p>Ok, this one should really be obvious, but while I was adding WASM support to my language I had a really subtle bug in my language's runtime. I didn't use libLLVMs <code>LLVMABISizeOfType</code> function correctly in one place (I accidentally used the host CPU architecture datalayout instead of the WASM datalayout).</p>
+<p>Because of this, make sure you always use the correct datalayout, and be consistent. Also, according to this <a href="https://llvm.org/docs/Frontend/PerformanceTips.html#the-basics">document about improving LLVM performance</a>, you should be setting the target datalayout for performance reasons anyway!</p>
+<h2 id="create-language-specific-bindings-for-language-interopability">Create language-specific bindings for language interopability</h2>
+<p>All communication with WebAssembly needs to be done via the earlier mentioned <code>WebAssembly.Memory</code>. This is a contiguous block of memory (a byte-array), that can be used to send data back and forth (e.g. numbers, strings, ...).</p>
+<p>You have full liberty to implement this data serialization any way you want, but you probably don't want to expose these details to end-users of your language. For this reason, you should design a Javascript/Typescript library that does all the (de-)serialization.</p>
+<p>For Eclair I created the <a href="https://www.npmjs.com/package/eclair-wasm-bindings">eclair-wasm-bindings package</a> that does exactly this.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article I highlighted some things to watch out for when adding WASM support to an existing language. LLVM does most of the work, but there are some final minor things that need to handled to ensure a language can run smoothly on WebAssembly. Overall though, it was a really smooth experience.</p>
+<p>If you have any questions or thoughts about this article, let me know on <a href="https://twitter.com/luctielen">Twitter</a>.</p>]]></content>
+  </entry>
   <entry>
       <title>Template metaprogramming in LLVM with Haskell</title>
       <link href="https://luctielen.com/posts/template_metaprogramming_in_llvm_with_haskell"/>
