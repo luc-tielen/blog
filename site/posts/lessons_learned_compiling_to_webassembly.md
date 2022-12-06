@@ -203,7 +203,7 @@ Before you try to port your language's runtime to WASM, it should already be
 well-tested for another platform. This will make it much easier to port over
 and add new code, since you can rely on the behavior of the existing code.
 Potential issues should only pop up in the WASM-specific portions of the runtime.
-And ofcourse add tests for the new WASM runtime too!
+And of course add tests for the new WASM runtime too!
 
 ## Make sure you are compiling for the correct target
 
@@ -217,7 +217,7 @@ consistent. Also, according to this
 [document about improving LLVM performance](https://llvm.org/docs/Frontend/PerformanceTips.html#the-basics),
 you should be setting the target datalayout for performance reasons anyway!
 
-## Create language-specific bindings for language interopability
+## Create language-specific bindings for language interoperability
 
 All communication with WebAssembly needs to be done via the earlier mentioned
 `WebAssembly.Memory`. This is a contiguous block of memory (a byte-array), that
