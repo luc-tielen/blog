@@ -64,6 +64,12 @@ pure and declarative nature. Here's the full list:
 Since I chose the `wasm32` target, I had to provide implementations for all of
 these. I will briefly go over how I did this in the next sections.
 
+_EDIT_: `@keithw` on the [WASM discord](https://discord.gg/jwCC7jS) pointed
+out that an alternative to my approach is to link against
+[wasi-libc](https://github.com/WebAssembly/wasi-libc) to provide the missing
+functions for you. But I'm leaving my original approach here for completeness.
+Thanks Keith!
+
 ### malloc and free
 
 The `malloc` and `free` syscalls are used for allocating memory in an
