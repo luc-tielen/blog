@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2022-12-04T19:48:03Z</updated>
+  <updated>2022-12-06T10:18:20Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -118,11 +118,11 @@
 <p>On top of that, the previously mentioned <code>NULL</code>-pointer is actually a valid address in WASM, which might lead to data being written to the wrong places.</p>
 <p>As you can imagine, these kinds of errors can be really hard to track down.. <span class="emoji" data-emoji="sweat_smile">😅</span></p>
 <h2 id="thoroughly-test-your-language-before-porting">Thoroughly test your language before porting</h2>
-<p>Before you try to port your language's runtime to WASM, it should already be well-tested for another platform. This will make it much easier to port over and add new code, since you can rely on the behavior of the existing code. Potential issues should only pop up in the WASM-specific portions of the runtime. And ofcourse add tests for the new WASM runtime too!</p>
+<p>Before you try to port your language's runtime to WASM, it should already be well-tested for another platform. This will make it much easier to port over and add new code, since you can rely on the behavior of the existing code. Potential issues should only pop up in the WASM-specific portions of the runtime. And of course add tests for the new WASM runtime too!</p>
 <h2 id="make-sure-you-are-compiling-for-the-correct-target">Make sure you are compiling for the correct target</h2>
 <p>Ok, this one should really be obvious, but while I was adding WASM support to my language I had a really subtle bug in my language's runtime. I didn't use libLLVMs <code>LLVMABISizeOfType</code> function correctly in one place (I accidentally used the host CPU architecture datalayout instead of the WASM datalayout).</p>
 <p>Because of this, make sure you always use the correct datalayout, and be consistent. Also, according to this <a href="https://llvm.org/docs/Frontend/PerformanceTips.html#the-basics">document about improving LLVM performance</a>, you should be setting the target datalayout for performance reasons anyway!</p>
-<h2 id="create-language-specific-bindings-for-language-interopability">Create language-specific bindings for language interopability</h2>
+<h2 id="create-language-specific-bindings-for-language-interoperability">Create language-specific bindings for language interoperability</h2>
 <p>All communication with WebAssembly needs to be done via the earlier mentioned <code>WebAssembly.Memory</code>. This is a contiguous block of memory (a byte-array), that can be used to send data back and forth (e.g. numbers, strings, ...).</p>
 <p>You have full liberty to implement this data serialization any way you want, but you probably don't want to expose these details to end-users of your language. For this reason, you should design a Javascript/Typescript library that does all the (de-)serialization.</p>
 <p>For Eclair I created the <a href="https://www.npmjs.com/package/eclair-wasm-bindings">eclair-wasm-bindings package</a> that does exactly this.</p>
