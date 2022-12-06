@@ -111,6 +111,7 @@
 <li><code>memcmp</code></li>
 </ol>
 <p>Since I chose the <code>wasm32</code> target, I had to provide implementations for all of these. I will briefly go over how I did this in the next sections.</p>
+<p><em>EDIT</em>: <code>@keithw</code> on the <a href="https://discord.gg/jwCC7jS">WASM discord</a> pointed out that an alternative to my approach is to link against <a href="https://github.com/WebAssembly/wasi-libc">wasi-libc</a> to provide the missing functions for you. But I'm leaving my original approach here for completeness. Thanks Keith!</p>
 <h3 id="malloc-and-free">malloc and free</h3>
 <p>The <code>malloc</code> and <code>free</code> syscalls are used for allocating memory in an application. Writing good, performant allocators is not an easy task, so I decided to depend on the open source <a href="https://github.com/wingo/walloc">walloc</a> library for implementations of <code>malloc</code> and <code>free</code>. Other allocators are possible too, as long as they support the WASM target you are trying to support!</p>
 <p>The compile commands earlier change a little when you add an allocator in the mix. If you want to use <code>walloc</code>, this becomes:</p>
