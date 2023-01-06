@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2023-01-06T21:53:11Z</updated>
+  <updated>2023-01-06T21:55:48Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -62,7 +62,7 @@
 <p>To get performance that is comparable (or better) to Souffle, extra optimizations need to be added to produce efficient queries. On top of that, there is still a lot of low hanging fruit in the language runtime that can also be improved. I'm looking forward to applying techniques I know from my C++ days to get good performance (e.g. SIMD, custom allocators, optimizing for cache locality, ... all that good stuff <span class="emoji" data-emoji="smile">😄</span>).</p>
 <p>Of course, to measure the performance of Eclair, several benchmarks will need to be written. Luckily, Souffle already has a <a href="https://souffle-lang.github.io/benchmarks">good set of benchmarks</a>. With a Souffle-to-Eclair converter, it should be reasonably easy to plug Eclair programs into these same set of benchmarks. I will probably write another post later this year on my progress regarding this, so stay tuned for that.</p>
 <h2 id="closing-thoughts">Closing thoughts</h2>
-<p>If you reached this point of the post, I hope I convinced you that 2023 is going to be an exciting year for Eclair! If you are interested in helping out, reach out to me on my <a href="https://twitter.com/luc-tielen">Twitter</a>. If you have any feedback on this post (or if you just liked it), you can also let me know there. If a lot of people end up liking this, I might make these kinds of progress posts more common.</p>]]></content>
+<p>If you reached this point of the post, I hope I convinced you that 2023 is going to be an exciting year for Eclair! If you are interested in helping out, reach out to me on my <a href="https://twitter.com/luctielen">Twitter</a>. If you have any feedback on this post (or if you just liked it), you can also let me know there. If a lot of people end up liking this, I might make these kinds of progress posts more common.</p>]]></content>
   </entry>
   <entry>
       <title>Lessons learned compiling to WebAssembly</title>
