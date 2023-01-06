@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="FP -&gt; Compilers -&gt; Logic -&gt; Blog">
+    <meta name="author" content="Luc Tielen">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@luctielen">
+<meta name="twitter:creator" content="@luctielen">
+<meta name="twitter:title" content="State of Eclair in 2023">
+    <meta name="twitter:description" content="">
+        <title>State of Eclair in 2023</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/syntax.css">
+    <script defer data-domain="luctielen.com" src="https://plausible.io/js/plausible.js"></script>
+  </head>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">Blog</a>
+      <a href="/videos">Videos</a>
+      <a href="/about">About</a>
+      <div class="social">
+        <a href="https://twitter.com/luctielen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+        >
+          <path
+            d="M16 3.538a6.461 6.461 0 01-1.884.516 3.301 3.301 0 001.444-1.816 6.607 6.607 0 01-2.084.797 3.28 3.28 0 00-2.397-1.034 3.28 3.28 0 00-3.197 4.028 9.321 9.321 0 01-6.766-3.431 3.284 3.284 0 001.015 4.381A3.301 3.301 0 01.643 6.57v.041A3.283 3.283 0 003.277 9.83a3.291 3.291 0 01-1.485.057 3.293 3.293 0 003.066 2.281 6.586 6.586 0 01-4.862 1.359 9.286 9.286 0 005.034 1.475c6.037 0 9.341-5.003 9.341-9.341 0-.144-.003-.284-.009-.425a6.59 6.59 0 001.637-1.697z"
+          />
+        </svg>
+      </a>
+       
+      <a href="https://github.com/luc-tielen">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          width="16"
+          height="16"
+        >
+          <path
+            d="M8 .198a8 8 0 00-2.529 15.591c.4.074.547-.174.547-.385 0-.191-.008-.821-.011-1.489-2.226.484-2.695-.944-2.695-.944-.364-.925-.888-1.171-.888-1.171-.726-.497.055-.486.055-.486.803.056 1.226.824 1.226.824.714 1.223 1.872.869 2.328.665.072-.517.279-.87.508-1.07-1.777-.202-3.645-.888-3.645-3.954 0-.873.313-1.587.824-2.147-.083-.202-.357-1.015.077-2.117 0 0 .672-.215 2.201.82A7.672 7.672 0 018 4.066c.68.003 1.365.092 2.004.269 1.527-1.035 2.198-.82 2.198-.82.435 1.102.162 1.916.079 2.117.513.56.823 1.274.823 2.147 0 3.073-1.872 3.749-3.653 3.947.287.248.543.735.543 1.481 0 1.07-.009 1.932-.009 2.195 0 .213.144.462.55.384A8 8 0 008.001.196z"
+          />
+        </svg>
+      </a>
+       
+      <a href="https://www.youtube.com/channel/UCeMz1NwTQlkhQvIFYMZoAJQ">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
+          />
+        </svg>
+      </a>
+      <a href="/atom.xml">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+          >
+            <path
+              d="M2.13 11.733c-1.175 0-2.13.958-2.13 2.126 0 1.174.955 2.122 2.13 2.122a2.126 2.126 0 002.133-2.122 2.133 2.133 0 00-2.133-2.126zM.002 5.436v3.067c1.997 0 3.874.781 5.288 2.196a7.45 7.45 0 012.192 5.302h3.08c0-5.825-4.739-10.564-10.56-10.564zM.006 0v3.068C7.128 3.068 12.924 8.87 12.924 16H16C16 7.18 8.824 0 .006 0z"
+            />
+          </svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+  <main class="post">
+    <h1>State of Eclair in 2023</h1>
+    <!--
+    <span class="date"></span>
+    -->
+    <div class="tags">
+      <span class="tag tag-compilers"><a href="/tag/compilers">compilers</a></span>
+    </div>
+    <p>Since we're at the start of a new year, I decided to write a post on the current status of the <a href="https://github.com/luc-tielen/eclair-lang">Eclair Datalog compiler</a> and where the language is heading.</p>
+<h2 id="looking-back-on-2022">Looking back on 2022</h2>
+<p>In short, it's been a crazy year for Eclair. At the beginning of 2022, the compiler didn't produce a working program yet. In April, I figured out how to compile the first Eclair programs to LLVM IR. Now at the start of 2023, we have <em>a lot more</em> features:</p>
+<ol>
+<li>Strings were added to the language.</li>
+<li>Arithmetic, equality and comparison operators were added.</li>
+<li>Errors are rendered in a pretty way, with a lot of detail.</li>
+<li>WebAssembly is now a fully supported compilation target.</li>
+</ol>
+<p>Not only features were added; also a large chunk of time was spent on creating a solid foundation for the future:</p>
+<ol>
+<li>The test suite has been rewritten to make use of <a href="https://llvm.org/docs/CommandGuide/lit.html">LLVM LIT</a>. LIT makes it trivial to setup complex test-scenarios to test the compiler thoroughly.</li>
+<li>A generic framework for transformations was introduced. It is compatible with all the IRs present in the compiler, making it possible to easily add new transformations to the compiler in a nano-pass style. Here's an example of <a href="https://github.com/luc-tielen/eclair-lang/blob/main/lib/Eclair/AST/Transforms/ConstantFolding.hs">constant folding</a> and <a href="https://github.com/luc-tielen/eclair-lang/blob/main/lib/Eclair/AST/Transforms/DeadCodeElimination.hs">dead code elimination (WIP)</a>.</li>
+<li>Libraries such as <a href="https://github.com/luc-tielen/eclair-haskell">eclair-haskell</a> and <a href="https://github.com/luc-tielen/eclair-wasm-bindings">eclair-wasm-bindings</a> were created to communicate easily with Eclair from other languages. You can now even use something like <a href="https://bakery.fly.dev">bakery</a> to compile Eclair to WebAssembly on the fly!</li>
+<li>We have a working LSP (OK, not all features are supported yet.. but it works very smooth already. <span class="emoji" data-emoji="smile">😄</span>)</li>
+</ol>
+<p>Most of these things were a side-project in their own regard, but they have paid off already and will continue do so in 2023.</p>
+<h2 id="looking-forward-to-2023">Looking forward to 2023</h2>
+<p>That was a quick recap of 2022, but what's planned for the coming year? I tried to group together the main ideas and found the following big topics:</p>
+<ol>
+<li>Extending and maturing the language,</li>
+<li>Bootstrapping / self-hosting of the compiler,</li>
+<li>Documentation,</li>
+<li>Performance improvements.</li>
+</ol>
+<h3 id="extending-and-maturing-the-language">Extending and maturing the language</h3>
+<p>The language has grown quickly the past couple of months, and a couple more big features will be added in the near future: logical negation in queries and <code>@extern</code> functions. Negation will make it possible to express a much larger set of queries/goals in Datalog. <code>@extern</code> functions will allow to call functions defined outside Eclair, keeping the runtime very compact.</p>
+<p>After this, the language will probably stay the same feature-wise for a while, while focusing on maturing the language. This can include things such as improving the compiler, working on the surrounding ecosystem of libraries, ...</p>
+<h3 id="bootstrapping-the-compiler">"Bootstrapping" the compiler</h3>
+<p>Another thing I want to focus on this year is bootstrapping the Eclair compiler. Compared to most other languages, this will be a different process for Eclair, since right now (Souffle) Datalog is used only for the semantic analysis part of the compiler. The plan here is to create a Eclair-to-Souffle converter, so that the semantic analysis can be fully written in Eclair itself and is only converted to Souffle for the initial "stage0" of the compiler. Visually this looks as follows:</p>
+<p><img src="/images/bootstrapping_eclair.png" alt="Bootrapping schematic" /></p>
+<p>I want to move forward with the language, so I'm not going to spend a large amount of time on this, but bootstrapping does provide some benefits:</p>
+<ol>
+<li>Easier to maintain. Changes can be made in the same codebase, and the feedback is pretty much instant.</li>
+<li>Better developer experience. Eclair has good <a href="https://github.com/luc-tielen/tree-sitter-eclair">tree-sitter</a> and LSP support and the errors are so much clearer than the ones provided by Souffle.</li>
+<li>It is a good test for checking the correctness of the compiler.</li>
+<li>Quicker compilation. The LLVM IR generated by Eclair compiles much faster than the C++ code generated by Souffle. This also allows us to ship a single binary by always using "compiled" mode, without having to switch back and forth between "interpreted" and "compiled" mode.</li>
+</ol>
+<h3 id="documentation">Documentation</h3>
+<p>Eclair is growing quickly in terms of features in the language, so it will become increasingly important that the language is well-documented. For this reason, I bought a domain where I will be hosting the docs. Right now there's nothing yet, but this will change soon!</p>
+<p>I've already been experimenting with a tech stack for the website and I think that <a href="https://astro.build/">Astro</a> will be a great choice for the website. It produces a mostly static site, but still offers the possibility to include Javascript in some places (for interactive code examples).</p>
+<p>I'm also thinking about streaming some of these "documentation sessions" and turning them into an AMA-style format. Let me know what you think about that!</p>
+<h3 id="performance">Performance</h3>
+<p>The final <strong>big</strong> topic for Eclair this year will be performance. I consider this a feature on it's own, because if the language is slow, not many people will use it. (You want your queries to be <em>fast</em>, right?!) Right now the speed is "respectable", but a lot of things can be improved still!</p>
+<p>To get performance that is comparable (or better) to Souffle, extra optimizations need to be added to produce efficient queries. On top of that, there is still a lot of low hanging fruit in the language runtime that can also be improved. I'm looking forward to applying techniques I know from my C++ days to get good performance (e.g. SIMD, custom allocators, optimizing for cache locality, ... all that good stuff <span class="emoji" data-emoji="smile">😄</span>).</p>
+<p>Of course, to measure the performance of Eclair, several benchmarks will need to be written. Luckily, Souffle already has a <a href="https://souffle-lang.github.io/benchmarks">good set of benchmarks</a>. With a Souffle-to-Eclair converter, it should be reasonably easy to plug Eclair programs into these same set of benchmarks. I will probably write another post later this year on my progress regarding this, so stay tuned for that.</p>
+<h2 id="closing-thoughts">Closing thoughts</h2>
+<p>If you reached this point of the post, I hope I convinced you that 2023 is going to be an exciting year for Eclair! If you are interested in helping out, reach out to me on my <a href="https://twitter.com/luc-tielen">Twitter</a>. If you have any feedback on this post (or if you just liked it), you can also let me know there. If a lot of people end up liking this, I might make these kinds of progress posts more common.</p>
+  </main>
+</body>

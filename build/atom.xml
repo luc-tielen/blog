@@ -2,12 +2,68 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2022-12-06T10:35:21Z</updated>
+  <updated>2023-01-06T21:52:32Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
   <id>https://luctielen.com/</id>
 
+  <entry>
+      <title>State of Eclair in 2023</title>
+      <link href="https://luctielen.com/posts/state_of_eclair_in_2023"/>
+      <id>https://luctielen.com/posts/state_of_eclair_in_2023</id>
+      <updated>2023-01-08T00:00:00Z</updated>
+      <category term="compilers"/>
+      <summary></summary>
+      <content type="html"><![CDATA[<p>Since we're at the start of a new year, I decided to write a post on the current status of the <a href="https://github.com/luc-tielen/eclair-lang">Eclair Datalog compiler</a> and where the language is heading.</p>
+<h2 id="looking-back-on-2022">Looking back on 2022</h2>
+<p>In short, it's been a crazy year for Eclair. At the beginning of 2022, the compiler didn't produce a working program yet. In April, I figured out how to compile the first Eclair programs to LLVM IR. Now at the start of 2023, we have <em>a lot more</em> features:</p>
+<ol>
+<li>Strings were added to the language.</li>
+<li>Arithmetic, equality and comparison operators were added.</li>
+<li>Errors are rendered in a pretty way, with a lot of detail.</li>
+<li>WebAssembly is now a fully supported compilation target.</li>
+</ol>
+<p>Not only features were added; also a large chunk of time was spent on creating a solid foundation for the future:</p>
+<ol>
+<li>The test suite has been rewritten to make use of <a href="https://llvm.org/docs/CommandGuide/lit.html">LLVM LIT</a>. LIT makes it trivial to setup complex test-scenarios to test the compiler thoroughly.</li>
+<li>A generic framework for transformations was introduced. It is compatible with all the IRs present in the compiler, making it possible to easily add new transformations to the compiler in a nano-pass style. Here's an example of <a href="https://github.com/luc-tielen/eclair-lang/blob/main/lib/Eclair/AST/Transforms/ConstantFolding.hs">constant folding</a> and <a href="https://github.com/luc-tielen/eclair-lang/blob/main/lib/Eclair/AST/Transforms/DeadCodeElimination.hs">dead code elimination (WIP)</a>.</li>
+<li>Libraries such as <a href="https://github.com/luc-tielen/eclair-haskell">eclair-haskell</a> and <a href="https://github.com/luc-tielen/eclair-wasm-bindings">eclair-wasm-bindings</a> were created to communicate easily with Eclair from other languages. You can now even use something like <a href="https://bakery.fly.dev">bakery</a> to compile Eclair to WebAssembly on the fly!</li>
+<li>We have a working LSP (OK, not all features are supported yet.. but it works very smooth already. <span class="emoji" data-emoji="smile">😄</span>)</li>
+</ol>
+<p>Most of these things were a side-project in their own regard, but they have paid off already and will continue do so in 2023.</p>
+<h2 id="looking-forward-to-2023">Looking forward to 2023</h2>
+<p>That was a quick recap of 2022, but what's planned for the coming year? I tried to group together the main ideas and found the following big topics:</p>
+<ol>
+<li>Extending and maturing the language,</li>
+<li>Bootstrapping / self-hosting of the compiler,</li>
+<li>Documentation,</li>
+<li>Performance improvements.</li>
+</ol>
+<h3 id="extending-and-maturing-the-language">Extending and maturing the language</h3>
+<p>The language has grown quickly the past couple of months, and a couple more big features will be added in the near future: logical negation in queries and <code>@extern</code> functions. Negation will make it possible to express a much larger set of queries/goals in Datalog. <code>@extern</code> functions will allow to call functions defined outside Eclair, keeping the runtime very compact.</p>
+<p>After this, the language will probably stay the same feature-wise for a while, while focusing on maturing the language. This can include things such as improving the compiler, working on the surrounding ecosystem of libraries, ...</p>
+<h3 id="bootstrapping-the-compiler">"Bootstrapping" the compiler</h3>
+<p>Another thing I want to focus on this year is bootstrapping the Eclair compiler. Compared to most other languages, this will be a different process for Eclair, since right now (Souffle) Datalog is used only for the semantic analysis part of the compiler. The plan here is to create a Eclair-to-Souffle converter, so that the semantic analysis can be fully written in Eclair itself and is only converted to Souffle for the initial "stage0" of the compiler. Visually this looks as follows:</p>
+<p><img src="/images/bootstrapping_eclair.png" alt="Bootrapping schematic" /></p>
+<p>I want to move forward with the language, so I'm not going to spend a large amount of time on this, but bootstrapping does provide some benefits:</p>
+<ol>
+<li>Easier to maintain. Changes can be made in the same codebase, and the feedback is pretty much instant.</li>
+<li>Better developer experience. Eclair has good <a href="https://github.com/luc-tielen/tree-sitter-eclair">tree-sitter</a> and LSP support and the errors are so much clearer than the ones provided by Souffle.</li>
+<li>It is a good test for checking the correctness of the compiler.</li>
+<li>Quicker compilation. The LLVM IR generated by Eclair compiles much faster than the C++ code generated by Souffle. This also allows us to ship a single binary by always using "compiled" mode, without having to switch back and forth between "interpreted" and "compiled" mode.</li>
+</ol>
+<h3 id="documentation">Documentation</h3>
+<p>Eclair is growing quickly in terms of features in the language, so it will become increasingly important that the language is well-documented. For this reason, I bought a domain where I will be hosting the docs. Right now there's nothing yet, but this will change soon!</p>
+<p>I've already been experimenting with a tech stack for the website and I think that <a href="https://astro.build/">Astro</a> will be a great choice for the website. It produces a mostly static site, but still offers the possibility to include Javascript in some places (for interactive code examples).</p>
+<p>I'm also thinking about streaming some of these "documentation sessions" and turning them into an AMA-style format. Let me know what you think about that!</p>
+<h3 id="performance">Performance</h3>
+<p>The final <strong>big</strong> topic for Eclair this year will be performance. I consider this a feature on it's own, because if the language is slow, not many people will use it. (You want your queries to be <em>fast</em>, right?!) Right now the speed is "respectable", but a lot of things can be improved still!</p>
+<p>To get performance that is comparable (or better) to Souffle, extra optimizations need to be added to produce efficient queries. On top of that, there is still a lot of low hanging fruit in the language runtime that can also be improved. I'm looking forward to applying techniques I know from my C++ days to get good performance (e.g. SIMD, custom allocators, optimizing for cache locality, ... all that good stuff <span class="emoji" data-emoji="smile">😄</span>).</p>
+<p>Of course, to measure the performance of Eclair, several benchmarks will need to be written. Luckily, Souffle already has a <a href="https://souffle-lang.github.io/benchmarks">good set of benchmarks</a>. With a Souffle-to-Eclair converter, it should be reasonably easy to plug Eclair programs into these same set of benchmarks. I will probably write another post later this year on my progress regarding this, so stay tuned for that.</p>
+<h2 id="closing-thoughts">Closing thoughts</h2>
+<p>If you reached this point of the post, I hope I convinced you that 2023 is going to be an exciting year for Eclair! If you are interested in helping out, reach out to me on my <a href="https://twitter.com/luc-tielen">Twitter</a>. If you have any feedback on this post (or if you just liked it), you can also let me know there. If a lot of people end up liking this, I might make these kinds of progress posts more common.</p>]]></content>
+  </entry>
   <entry>
       <title>Lessons learned compiling to WebAssembly</title>
       <link href="https://luctielen.com/posts/lessons_learned_compiling_to_webassembly"/>
