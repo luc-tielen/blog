@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2023-01-06T21:52:32Z</updated>
+  <updated>2023-01-06T21:53:11Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
@@ -12,7 +12,7 @@
       <title>State of Eclair in 2023</title>
       <link href="https://luctielen.com/posts/state_of_eclair_in_2023"/>
       <id>https://luctielen.com/posts/state_of_eclair_in_2023</id>
-      <updated>2023-01-08T00:00:00Z</updated>
+      <updated>2023-01-06T00:00:00Z</updated>
       <category term="compilers"/>
       <summary></summary>
       <content type="html"><![CDATA[<p>Since we're at the start of a new year, I decided to write a post on the current status of the <a href="https://github.com/luc-tielen/eclair-lang">Eclair Datalog compiler</a> and where the language is heading.</p>
