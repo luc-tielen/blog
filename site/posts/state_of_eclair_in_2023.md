@@ -15,7 +15,7 @@ and where the language is heading.
 In short, it's been a crazy year for Eclair. At the beginning of 2022, the
 compiler didn't produce a working program yet. In April, I figured out how to
 compile the first Eclair programs to LLVM IR. Now at the start of 2023, we have
-*a lot more* features:
+_a lot more_ features:
 
 1. Strings were added to the language.
 2. Arithmetic, equality and comparison operators were added.
@@ -76,7 +76,10 @@ that the semantic analysis can be fully written in Eclair itself and is only
 converted to Souffle for the initial "stage0" of the compiler. Visually this
 looks as follows:
 
-![Bootrapping schematic](/images/bootstrapping_eclair.png)
+<img
+   src="/images/bootstrapping_eclair.png"
+   alt="Bootstrapping schematic"
+   style="max-width: 100%;"/>
 
 I want to move forward with the language, so I'm not going to spend a large
 amount of time on this, but bootstrapping does provide some benefits:
@@ -111,7 +114,7 @@ turning them into an AMA-style format. Let me know what you think about that!
 
 The final **big** topic for Eclair this year will be performance. I consider
 this a feature on it's own, because if the language is slow, not many people
-will use it. (You want your queries to be *fast*, right?!) Right now the speed is
+will use it. (You want your queries to be _fast_, right?!) Right now the speed is
 "respectable", but a lot of things can be improved still!
 
 To get performance that is comparable (or better) to Souffle, extra
