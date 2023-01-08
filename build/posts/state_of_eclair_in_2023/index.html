@@ -117,7 +117,10 @@
 <p>After this, the language will probably stay the same feature-wise for a while, while focusing on maturing the language. This can include things such as improving the compiler, working on the surrounding ecosystem of libraries, ...</p>
 <h3 id="bootstrapping-the-compiler">"Bootstrapping" the compiler</h3>
 <p>Another thing I want to focus on this year is bootstrapping the Eclair compiler. Compared to most other languages, this will be a different process for Eclair, since right now (Souffle) Datalog is used only for the semantic analysis part of the compiler. The plan here is to create a Eclair-to-Souffle converter, so that the semantic analysis can be fully written in Eclair itself and is only converted to Souffle for the initial "stage0" of the compiler. Visually this looks as follows:</p>
-<p><img src="/images/bootstrapping_eclair.png" alt="Bootrapping schematic" /></p>
+<p><img
+   src="/images/bootstrapping_eclair.png"
+   alt="Bootstrapping schematic"
+   style="max-width: 100%;"/></p>
 <p>I want to move forward with the language, so I'm not going to spend a large amount of time on this, but bootstrapping does provide some benefits:</p>
 <ol>
 <li>Easier to maintain. Changes can be made in the same codebase, and the feedback is pretty much instant.</li>
