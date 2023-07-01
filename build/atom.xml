@@ -2,12 +2,28 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>FP -&gt; Compilers -&gt; Logic -&gt; Blog</title>
     <link href="https://luctielen.com/atom.xml" rel="self" type="application/rss+xml" />
-  <updated>2023-03-13T09:18:48Z</updated>
+  <updated>2023-07-01T22:05:55Z</updated>
   <author>
       <name>Luc Tielen</name>
   </author>
   <id>https://luctielen.com/</id>
 
+  <entry>
+      <title>Announcement: new Eclair website!</title>
+      <link href="https://luctielen.com/posts/announcement_eclair_website"/>
+      <id>https://luctielen.com/posts/announcement_eclair_website</id>
+      <updated>2023-07-02T00:00:00Z</updated>
+      <category term="compilers"/>
+      <category term="meta"/>
+      <summary></summary>
+      <content type="html"><![CDATA[<p>I haven't been able to post as much this year due to work and other <em>things in real life</em> <span class="emoji" data-emoji="tm">™️</span>, but today I've got a big announcement: my programming language Eclair has a <a href="https://eclair-lang.org">new website</a>, as well as a new <a href="https://discord.gg/mC2arUrxKg">Eclair Discord server</a>!</p>
+<p>Right now it's in a MVP state, but more information will be added there over time, and I think it's now ready for others to start using it.</p>
+<h2 id="next-steps">Next steps</h2>
+<p>Looking back on my previous <a href="/posts/state_of_eclair_in_2023">article on the state of Eclair in 2023</a>, I want to spend the majority of the remaining time this year in Eclair on finishing the "bootstrapping" process of the compiler and improving performance.</p>
+<p>Bootstrapping will make it so the Eclair compiler becomes a single binary to install (by linking directly with generated Eclair code, without any runtime dependency on Soufflé). After this is done, I'll update the install instructions on the website with the new / simpler approach.</p>
+<p>On the performance side, I'm going to add another page to the Eclair website where I'm planning to show charts of a set of performance benchmarks after every merged pull request to the <code>main</code> branch. After that is done, it will be mostly a matter of adding several compiler optimizations and improvements to the runtime. (I actually have a list of about 40 ideas lying around that I can't wait to start on <span class="emoji" data-emoji="smile">😄</span>.)</p>
+<p>Have any comments or questions? Let me know on <a href="https://twitter.com/luctielen">Twitter</a> or on the new Discord server!</p>]]></content>
+  </entry>
   <entry>
       <title>State of Eclair in 2023</title>
       <link href="https://luctielen.com/posts/state_of_eclair_in_2023"/>
