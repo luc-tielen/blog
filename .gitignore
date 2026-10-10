@@ -1,7 +1,3 @@
-.stack-work/
-.shake
-docs/
-build/
-dist/
 node_modules/
+dist/
 .astro/
