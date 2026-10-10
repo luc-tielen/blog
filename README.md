@@ -16,5 +16,14 @@ npm run dev
 npm run build
 ```
 
-The static site is written to `dist/`. Pushes to `master` are built and deployed
-to GitHub Pages by `.github/workflows/deploy-pages.yml`.
+The static site is written to `dist/`.
+
+## Deployment
+
+The production site remains hosted by Netlify behind Cloudflare. Netlify watches
+the `deploy` branch and publishes its `build/` directory. To build the Astro site
+and update that branch, run:
+
+```sh
+./deploy.sh
+```
