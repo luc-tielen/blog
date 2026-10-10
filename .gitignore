@@ -2,3 +2,6 @@
 .shake
 docs/
 build/
+dist/
+node_modules/
+.astro/

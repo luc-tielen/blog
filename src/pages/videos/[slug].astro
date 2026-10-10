@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const videos = await getCollection('videos');
+  return videos.map((video) => ({ params: { slug: video.slug }, props: { video } }));
+}
+
+const { video } = Astro.props;
+const { Content } = await video.render();
+
+const canonicalUrl = `https://luctielen.com/videos/${video.slug}/`;
+---
+
+<BaseLayout
+  title={video.data.title}
+  description={video.data.description}
+  canonical={canonicalUrl}
+  syntaxHighlight={true}
+>
+  <div class="video">
+    <h1>{video.data.title}</h1>
+    <iframe
+      width="1156"
+      height="650"
+      src={`https://www.youtube.com/embed/${video.data.youtubeUrl}`}
+      title={video.data.title}
+      frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; gyroscope; accelerometer; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+    <Content />
+  </div>
+</BaseLayout>

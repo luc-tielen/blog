@@ -1,0 +1,44 @@
+---
+import Header from '../components/Header.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical?: string;
+  syntaxHighlight?: boolean;
+}
+
+const {
+  title,
+  description = 'FP -> Compilers -> Logic -> Blog',
+  canonical,
+  syntaxHighlight = false,
+} = Astro.props;
+
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).toString();
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="author" content="Luc Tielen" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="google-site-verification" content="leQwYn273S2nzTp7NdfusiVPntHR052-fieaLVqWhF4" />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Amaranth&family=Titillium+Web&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/style.css" />
+    {syntaxHighlight && <link rel="stylesheet" href="/css/syntax.css" />}
+    <link rel="canonical" href={canonicalUrl} />
+    <script defer data-domain="luctielen.com" src="https://plausible.io/js/plausible.js"></script>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>
