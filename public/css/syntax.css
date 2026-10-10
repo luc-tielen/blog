@@ -4,17 +4,17 @@ Mapped to Shiki CSS variables theme tokens.
 */
 
 :root {
-  --shiki-color-text: #575f66;
-  --shiki-color-background: #fafafa;
-  --shiki-token-constant: #a37acc;
-  --shiki-token-string: #86b300;
-  --shiki-token-comment: #607880;
-  --shiki-token-keyword: #fa8d3e;
-  --shiki-token-parameter: #55b4d4;
-  --shiki-token-function: #f2ae49;
-  --shiki-token-string-expression: #4cbf99;
-  --shiki-token-punctuation: #ed9366;
-  --shiki-token-link: #399ee6;
+  --astro-code-color-text: #575f66;
+  --astro-code-color-background: #fafafa;
+  --astro-code-token-constant: #a37acc;
+  --astro-code-token-string: #86b300;
+  --astro-code-token-comment: #607880;
+  --astro-code-token-keyword: #fa8d3e;
+  --astro-code-token-parameter: #55b4d4;
+  --astro-code-token-function: #f2ae49;
+  --astro-code-token-string-expression: #4cbf99;
+  --astro-code-token-punctuation: #ed9366;
+  --astro-code-token-link: #399ee6;
 }
 
 pre.astro-code {
