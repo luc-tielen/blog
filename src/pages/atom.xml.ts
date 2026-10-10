@@ -14,8 +14,9 @@ export async function GET() {
 
   const entries = await Promise.all(
     sortedPosts.map(async (post) => {
-      const url = `${site}/posts/${post.slug}/`;
-      const date = parseDate(post.data.postDate).toISOString();
+      // Preserve the stable URLs and midnight-UTC timestamps used by the old feed.
+      const url = `${site}/posts/${post.slug}`;
+      const date = parseDate(post.data.postDate).toISOString().replace('.000Z', 'Z');
       const { Content } = await post.render();
       const content = await container.renderToString(Content);
       const categories = post.data.tags
@@ -53,7 +54,18 @@ ${entries.join('\n')}
 }
 
 function parseDate(str: string): Date {
-  return new Date(str);
+  const match = /^(?<month>[A-Z][a-z]{2}) (?<day>\d{1,2}), (?<year>\d{4})$/.exec(str);
+  if (!match?.groups) {
+    throw new Error(`Unsupported post date: ${str}`);
+  }
+
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months.indexOf(match.groups.month);
+  if (month === -1) {
+    throw new Error(`Unsupported post month: ${match.groups.month}`);
+  }
+
+  return new Date(Date.UTC(Number(match.groups.year), month, Number(match.groups.day)));
 }
 
 function escapeXml(str: string): string {
