@@ -1,0 +1,30 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const videos = await getCollection('videos');
+
+function parseDate(str: string): Date {
+  return new Date(str);
+}
+
+const sortedVideos = videos.sort(
+  (a, b) => parseDate(b.data.videoDate).getTime() - parseDate(a.data.videoDate).getTime()
+);
+---
+
+<BaseLayout title="FP -> Compilers -> Logic -> Blog" canonical="https://luctielen.com/videos/">
+  <h1 class="videos-title">All videos</h1>
+  <ul class="videos">
+    {sortedVideos.map((video) => (
+      <li>
+        <span>{video.data.videoDate}</span>
+        <a href={`/videos/${video.slug}`}>{video.data.title}</a>
+      </li>
+    ))}
+  </ul>
+  <p>
+    I enjoy giving technical talks. If you are organizing a conference and are looking for a
+    speaker, contact me on <a href="https://twitter.com/luctielen">Twitter</a>!
+  </p>
+</BaseLayout>

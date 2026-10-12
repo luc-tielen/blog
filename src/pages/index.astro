@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const posts = await getCollection('posts');
+
+function parseDate(str: string): Date {
+  return new Date(str);
+}
+
+const sortedPosts = posts.sort(
+  (a, b) => parseDate(b.data.postDate).getTime() - parseDate(a.data.postDate).getTime()
+);
+
+const allTags = [...new Set(posts.flatMap((p) => p.data.tags ?? []))].sort();
+---
+
+<BaseLayout title="FP -> Compilers -> Logic -> Blog" canonical="https://luctielen.com">
+  <h1 class="posts-title">All posts</h1>
+  <div class="tags">
+    {allTags.map((tag) => (
+      <span class={`tag tag-${tag}`}>
+        <a href={`/tag/${tag}`}>{tag}</a>
+      </span>
+    ))}
+  </div>
+  <ul class="posts">
+    {sortedPosts.map((post) => (
+      <li>
+        <span>{post.data.postDate}</span>
+        <a href={`/posts/${post.slug}`}>{post.data.title}</a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>
