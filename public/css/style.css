@@ -211,6 +211,10 @@ ul.posts li span {
   max-height: 500px;
 }
 
+.post img {
+  max-width: 100%;
+}
+
 .post h1 + p {
   font-size: 1.5rem;
 }
@@ -283,6 +287,7 @@ ul.videos li span {
   border-radius: 4px;
   padding-left: 8px;
   padding-right: 8px;
+  margin-right: 0.25rem;
 }
 
 .tag a {
